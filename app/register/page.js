@@ -1,25 +1,25 @@
 import Link from "next/link";
-import { LoginForm } from "@/components/auth/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
 import { Button } from "@/components/ui/button";
 
-export default function HomePage() {
+export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Student Registration System
+            Join Our University
           </h1>
           <p className="text-muted-foreground mb-4">
-            University Application Management Portal
+            Start your academic journey with us
           </p>
-          <Link href="/register">
+          <Link href="/">
             <Button variant="outline" size="sm">
-              New Student? Register Here
+              Already have an account? Sign In
             </Button>
           </Link>
         </div>
-        <LoginForm />
+        <RegisterForm />
       </div>
     </div>
   );

@@ -1,0 +1,1 @@
+Create a route.js for signing up using supabase then connect it to register page. Just like in login.
