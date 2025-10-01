@@ -20,13 +20,13 @@ import { Eye, EyeOff, Upload, User } from "lucide-react";
 
 export function RegisterForm() {
   const [formData, setFormData] = useState({
-    firstName: "",
-    middleName: "",
+    first_name: "",
+    middle_name: "",
     surname: "",
-    extensionName: "",
+    extension_name: "",
     email: "",
     phone: "",
-    dateOfBirth: "",
+    date_of_birth: "",
     address: "",
     password: "",
     confirmPassword: "",
@@ -71,7 +71,7 @@ export function RegisterForm() {
       reader.onload = (e) => {
         const result = e.target?.result;
         setProfilePhotoPreview(result);
-        setFormData((prev) => ({ ...prev, profilePhoto: result }));
+        setFormData((prev) => ({ ...prev, profilePhoto: file }));
       };
       reader.readAsDataURL(file);
       setError("");
@@ -97,13 +97,14 @@ export function RegisterForm() {
 
     const result = await register({
       ...formData,
-      dateOfBirth: formData.dateOfBirth
-        ? new Date(formData.dateOfBirth)
-        : undefined,
+      // Keep date_of_birth as string (YYYY-MM-DD format) - will be converted to ISO timestamp in API
+      date_of_birth: formData.date_of_birth || '',
     });
 
     if (result.success) {
       router.push("/dashboard");
+
+      console.log("success")
     } else {
       setError(result.error || "Registration failed");
     }
@@ -183,26 +184,26 @@ export function RegisterForm() {
           {/* Personal Info Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="first_name">First Name *</Label>
               <Input
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
+                id="first_name"
+                name="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
                 placeholder="Enter your first name"
                 required
-                autoComplete="firstName"
+                autoComplete="first_name"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="middleName">Middle Name</Label>
+              <Label htmlFor="middle_name">Middle Name</Label>
               <Input
-                id="middleName"
-                name="middleName"
-                value={formData.middleName}
+                id="middle_name"
+                name="middle_name"
+                value={formData.middle_name}
                 onChange={handleChange}
                 placeholder="Enter your middle name"
-                autoComplete="middleName"
+                autoComplete="middle_name"
               />
             </div>
             <div className="space-y-2">
@@ -218,14 +219,14 @@ export function RegisterForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="extensionName">Extension Name</Label>
+              <Label htmlFor="extension_name">Extension Name</Label>
               <Input
-                id="extensionName"
-                name="extensionName"
-                value={formData.extensionName}
+                id="extension_name"
+                name="extension_name"
+                value={formData.extension_name}
                 onChange={handleChange}
                 placeholder="Enter your extension name"
-                autoComplete="extensionName"
+                autoComplete="extension_name"
               />
             </div>
             <div className="space-y-2">
@@ -254,12 +255,12 @@ export function RegisterForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <Label htmlFor="date_of_birth">Date of Birth</Label>
               <Input
-                id="dateOfBirth"
-                name="dateOfBirth"
+                id="date_of_birth"
+                name="date_of_birth"
                 type="date"
-                value={formData.dateOfBirth}
+                value={formData.date_of_birth}
                 onChange={handleChange}
                 autoComplete="bday"
               />
