@@ -1,0 +1,189 @@
+"use client"
+
+import { Suspense, useEffect, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { useAuth } from "@/lib/auth"
+import { FileText, Upload, User, Bell } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { getProfile, getApplication, getDocuments } from "@/lib/student_info"
+
+export function StudentDashboard() {
+  const [profile, setProfile] = useState()
+  const [application, setApplication] = useState()
+  const [documents, setDocuments] = useState()
+  const { user } = useAuth()
+  const router = useRouter()
+
+  const profileData = async () => {
+    const data = await getProfile(user.id)
+    setProfile(data)
+  }
+
+  const applicationData = async () => {
+    const data = await getApplication(user.id)
+    setApplication(data)
+  }
+
+  const documentData = async () => {
+    const data = await getDocuments(user.id)
+    setDocuments(data)
+  }
+
+  useEffect(() => {
+    if (!user || !user.id) return; // Wait until user and user.id are available
+
+    profileData()
+    applicationData()
+    documentData()
+  }, [user]);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "bg-gray-300"
+      case "In Progress":
+        return "bg-blue-500 text-white"
+      case "Approved":
+        return "bg-green-500 text-white"
+      case "Rejected":
+        return "bg-red-500 text-white"
+      default:
+        return "bg-yellow-500"
+    }
+  }
+
+  const requiredDocuments = ['Birth Certificate', 'Good Moral', 'Grade Card']
+  let uploadedDocuments = []
+  let missingDocuments = []
+
+  if (documents) {
+    documents.birth_certificate !== null ? uploadedDocuments.push('Birth Certificate') : missingDocuments.push('Birth Certificate')
+    documents.good_moral !== null ? uploadedDocuments.push('Good Moral') : missingDocuments.push('Good Moral')
+    documents.grade_card !== null ? uploadedDocuments.push('Grade Card') : missingDocuments.push('Grade Card')
+  }
+
+  const completionPercentage = (uploadedDocuments.length / requiredDocuments.length) * 100
+
+  const handleUploadDocuments = () => {
+    router.push("/documents")
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Welcome, {profile && profile.first_name}</h1>
+          <p className="text-muted-foreground">Email: {user && user.email}</p>
+        </div>
+        <Badge className={getStatusColor(application && application.Status.status)}>{application && application.Status.status}</Badge>
+      </div>
+    
+      {/* Application Status Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Application Status
+          </CardTitle>
+          <CardDescription>Track your application progress and requirements</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Application Progress</span>
+            <span className="text-sm text-muted-foreground">{Math.round(completionPercentage)}% Complete</span>
+          </div>
+          <Progress value={completionPercentage} className="w-full" />
+
+          {application && application.Status.status === "Incomplete" && completionPercentage !== 100 && (
+            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+              <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Missing Documents</h4>
+              <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                {missingDocuments.map((doc, index) => (
+                  <li key={index}>• {doc}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link href="/documents">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center space-x-4 p-6">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                <Upload className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-medium">Upload Documents</h3>
+                <p className="text-sm text-muted-foreground">Add required files</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/profile">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center space-x-4 p-6">
+              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                <User className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="font-medium">Update Profile</h3>
+                <p className="text-sm text-muted-foreground">Edit personal info</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/notifications">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="flex items-center space-x-4 p-6">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                <Bell className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <h3 className="font-medium">Notifications</h3>
+                <p className="text-sm text-muted-foreground">View updates</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* Document Requirements */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Required Documents</CardTitle>
+          <CardDescription>Please upload all required documents to complete your application</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {requiredDocuments.map((doc, index) => {
+              const isUploaded = uploadedDocuments.find((uDoc) => doc === uDoc)
+              return (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${isUploaded ? "bg-green-500" : "bg-gray-300"}`} />
+                    <span className="font-medium">{doc}</span>
+                  </div>
+                  <Badge variant={isUploaded ? "default" : "secondary"}>{isUploaded ? "Uploaded" : "Required"}</Badge>
+                </div>
+              )
+            })}
+          </div>
+          <Button className="w-full mt-4 flex items-center gap-2" onClick={handleUploadDocuments} size="lg">
+            <Upload className="h-4 w-4" />
+            Upload Documents
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

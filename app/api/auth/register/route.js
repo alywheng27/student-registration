@@ -18,9 +18,48 @@ export async function POST(request) {
     const email = formData.get('email');
     const phone = formData.get('phone');
     const date_of_birth_raw = formData.get('date_of_birth');
-    const address = formData.get('address');
     const password = formData.get('password');
     const profilePhoto = formData.get('profilePhoto');
+
+    // New fields
+    const place_of_birth = formData.get('place_of_birth')
+    const religion = formData.get('religion')
+    const citizenship = formData.get('citizenship')
+    const sex = formData.get('sex');
+    const civil_status = formData.get('civil_status');
+    const region = formData.get('region');
+    const barangay = formData.get('barangay');
+    const municipality = formData.get('municipality');
+    const province = formData.get('province');
+
+    // School fields
+    const elementary = formData.get('elementary_school')
+    const elementary_address = formData.get('elementary_school_address')
+    const elementary_year_graduated = formData.get('elementary_year_graduated')
+    const junior_high = formData.get('junior_high_school')
+    const junior_high_address = formData.get('junior_high_school_address')
+    const junior_high_year_graduated = formData.get('junior_high_year_graduated')
+    const senior_high = formData.get('senior_high_school')
+    const senior_high_address = formData.get('senior_high_school_address')
+    const senior_high_year_graduated = formData.get('senior_high_year_graduated')
+
+    // Parents
+    const father_name = formData.get('father_name')
+    const father_occupation = formData.get('father_occupation')
+    const father_educational_attainment = formData.get('father_education')
+    const mother_name = formData.get('mother_name')
+    const mother_occupation = formData.get('mother_occupation')
+    const mother_educational_attainment = formData.get('mother_education')
+    const monthly_income = formData.get('monthly_income')
+    // Emergency
+    const name = formData.get('emergency_name')
+    const relationship = formData.get('emergency_relationship')
+    const home_address = formData.get('emergency_address')
+    const emergency_phone = formData.get('emergency_phone')
+    // Requirements
+    const birth_certificate = formData.get('birth_certificate')
+    const good_moral = formData.get('good_moral')
+    const grade_card = formData.get('grade_card')
 
     console.log("📋 Form data extracted");
 
@@ -73,7 +112,6 @@ export async function POST(request) {
           extension_name,
           phone,
           date_of_birth,
-          address,
         }
       }
     });
@@ -82,7 +120,32 @@ export async function POST(request) {
       console.error("❌ Supabase Auth signup error:", error);
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
+
     console.log("✅ User account created successfully");
+
+    // Insert user address data into Address table
+    console.log("💾 Inserting user address data into database...");
+    const addressData = {
+      uid: data.user.id,
+      barangay,
+      municipality,
+      province,
+    };
+        
+    const { error: addressError } = await supabase.from("Address").insert(addressData);
+
+    if (addressError) {
+      console.error("❌ Address creation error:", addressError);
+      // Don't fail registration if address creation fails
+      if (addressError.message === 'duplicate key value violates unique constraint "Address_uid_key"') {
+        return NextResponse.json(
+          { error: "User already exists" },
+          { status: 400 }
+        );
+      }
+    } else {
+      console.log("✅ Address data inserted successfully");
+    }
 
     // Handle profile photo upload if provided
     let photoUrl = null;
@@ -122,8 +185,13 @@ export async function POST(request) {
       extension_name,
       phone,
       date_of_birth,
-      address,
       photo_url: photoUrl,
+      place_of_birth,
+      religion,
+      citizenship,
+      sex_id: sex,
+      civil_status_id: civil_status,
+      region_id: region,
     };
         
     const { error: profileError } = await supabase.from("Profiles").insert(profileData);
@@ -131,8 +199,219 @@ export async function POST(request) {
     if (profileError) {
       console.error("❌ Profile creation error:", profileError);
       // Don't fail registration if profile creation fails
+      return NextResponse.json(
+        { error: profileError.message },
+        { status: 400 }
+      );
     } else {
       console.log("✅ Profile data inserted successfully");
+    }
+
+    // Insert user school attended data into School_Attended table
+    console.log("💾 Inserting user school attended data into database...");
+    const schoolAttendedData = {
+      uid: data.user.id,
+      elementary,
+      elementary_address,
+      elementary_year_graduated,
+      junior_high,
+      junior_high_address,
+      junior_high_year_graduated,
+      senior_high,
+      senior_high_address,
+      senior_high_year_graduated,
+    };
+        
+    const { error: schoolAttendedError } = await supabase.from("School_Attended").insert(schoolAttendedData);
+
+    if (schoolAttendedError) {
+      console.error("❌ School attended creation error:", schoolAttendedError);
+      // Don't fail registration if school attended creation fails
+      return NextResponse.json(
+        { error: schoolAttendedError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ School attended data inserted successfully");
+    }
+
+    // Insert user parents data into Parents table
+    console.log("💾 Inserting user parents data into database...");
+    const parentsData = {
+      uid: data.user.id,
+      father_name,
+      father_occupation,
+      father_educational_attainment,
+      mother_name,
+      mother_occupation,
+      mother_educational_attainment,
+      monthly_income,
+    };
+        
+    const { error: parentsError } = await supabase.from("Parents").insert(parentsData);
+
+    if (parentsError) {
+      console.error("❌ Parents creation error:", parentsError);
+      // Don't fail registration if parents creation fails
+      return NextResponse.json(
+        { error: parentsError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Parents data inserted successfully");
+    }
+
+    // Insert user emergency contact data into Emergency_Contact table
+    console.log("💾 Inserting user emergency contact data into database...");
+    const emergencyContactData = {
+      uid: data.user.id,
+      name,
+      relationship,
+      home_address,
+      phone: emergency_phone,
+    };
+        
+    const { error: emergencyContactError } = await supabase.from("Emergency_Contact").insert(emergencyContactData);
+
+    if (emergencyContactError) {
+      console.error("❌ Emergency contact creation error:", emergencyContactError);
+      // Don't fail registration if emergency contact creation fails
+      return NextResponse.json(
+        { error: emergencyContactError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Emergency contact data inserted successfully");
+    }
+
+    // Handle birth certificate document upload if provided
+    let birthCertificateUrl = null;
+    if (birth_certificate && birth_certificate.size > 0) {
+      console.log("📸 Processing birth certificate document upload...");
+      const fileExtension = birth_certificate.name.split('.').pop();
+      const fileName = `${birth_certificate.name}-${data.user.id}-${Date.now()}.${fileExtension}`;
+      
+      console.log("📁 Uploading file");
+      
+      const { error: uploadError } = await supabase.storage
+        .from('Documents')
+        .upload(fileName, birth_certificate);
+
+      if (uploadError) {
+        console.error("❌ Document upload error:", uploadError);
+        // Don't fail registration if document upload fails
+      } else {
+        console.log("✅ Document uploaded successfully");
+        // Get public URL for the uploaded document
+        const { data: documentData } = await supabase.storage
+          .from('Documents')
+          .getPublicUrl(fileName);
+          birthCertificateUrl = documentData.publicUrl;
+      }
+    } else {
+      console.log("📸 No birth certificate document provided");
+    }
+
+    // Handle good moral document upload if provided
+    let goodMoralUrl = null;
+    if (good_moral && good_moral.size > 0) {
+      console.log("📸 Processing good moral document upload...");
+      const fileExtension = good_moral.name.split('.').pop();
+      const fileName = `${good_moral.name}-${data.user.id}-${Date.now()}.${fileExtension}`;
+      
+      console.log("📁 Uploading file");
+      
+      const { error: uploadError } = await supabase.storage
+        .from('Documents')
+        .upload(fileName, good_moral);
+
+      if (uploadError) {
+        console.error("❌ Document upload error:", uploadError);
+        // Don't fail registration if document upload fails
+      } else {
+        console.log("✅ Document uploaded successfully");
+        // Get public URL for the uploaded document
+        const { data: documentData } = await supabase.storage
+          .from('Documents')
+          .getPublicUrl(fileName);
+          goodMoralUrl = documentData.publicUrl;
+      }
+    } else {
+      console.log("📸 No good moral document provided");
+    }
+
+    // Handle grade card document upload if provided
+    let gradeCardUrl = null;
+    if (grade_card && grade_card.size > 0) {
+      console.log("📸 Processing grade card document upload...");
+      const fileExtension = grade_card.name.split('.').pop();
+      const fileName = `${grade_card.name}-${data.user.id}-${Date.now()}.${fileExtension}`;
+      
+      console.log("📁 Uploading file");
+      
+      const { error: uploadError } = await supabase.storage
+        .from('Documents')
+        .upload(fileName, grade_card);
+
+      if (uploadError) {
+        console.error("❌ Document upload error:", uploadError);
+        // Don't fail registration if document upload fails
+      } else {
+        console.log("✅ Document uploaded successfully");
+        // Get public URL for the uploaded document
+        const { data: documentData } = await supabase.storage
+          .from('Documents')
+          .getPublicUrl(fileName);
+          gradeCardUrl = documentData.publicUrl;
+      }
+    } else {
+      console.log("📸 No grade card document provided");
+    }
+
+    // Insert user documents data into Documents table
+    console.log("💾 Inserting user documents data into database...");
+    const documentsData = {
+      uid: data.user.id,
+      birth_certificate: birthCertificateUrl,
+      birth_certificate_status: '1',
+      good_moral: goodMoralUrl,
+      good_moral_status: '1',
+      grade_card: gradeCardUrl,
+      grade_card_status: '1',
+    };
+        
+    const { error: documentsError } = await supabase.from("Documents").insert(documentsData);
+
+    if (documentsError) {
+      console.error("❌ Documents creation error:", documentsError);
+      // Don't fail registration if documents creation fails
+      return NextResponse.json(
+        { error: documentsError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Documents data inserted successfully");
+    }
+
+    // Insert user application data into Documents table
+    console.log("💾 Inserting user application data into database...");
+    const applicationData = {
+      uid: data.user.id,
+      status_id: '1',
+      step_id: '1',
+    };
+        
+    const { error: applicationError } = await supabase.from("Applications").insert(applicationData);
+
+    if (applicationError) {
+      console.error("❌ Application creation error:", applicationError);
+      // Don't fail registration if application creation fails
+      return NextResponse.json(
+        { error: applicationError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Application data inserted successfully");
     }
 
     const responseData = { 
