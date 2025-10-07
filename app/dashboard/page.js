@@ -5,9 +5,18 @@ import { StudentDashboard } from "@/components/student/student-dashboard"
 // import { AdminDashboard } from "@/components/admin/admin-dashboard"
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
   const { user, userRole, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) {
+      router.push("/");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,7 +27,7 @@ export default function DashboardPage() {
             <span className="text-sm text-muted-foreground">
               {user && user.email} ({userRole})
             </span>
-            <Button variant="outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>

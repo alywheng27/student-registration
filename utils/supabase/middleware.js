@@ -39,11 +39,17 @@ export async function updateSession(request) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // if (
+  //   !user &&
+  //   !request.nextUrl.pathname.startsWith("/") &&
+  //   !request.nextUrl.pathname.startsWith("/auth") &&
+  //   !request.nextUrl.pathname.startsWith("/error")
+  // ) {
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/error")
+    !request.nextUrl.pathname.startsWith("/api") &&
+    request.nextUrl.pathname !== '/' &&
+    request.nextUrl.pathname !== '/auth/register'
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
