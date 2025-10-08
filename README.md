@@ -1,8 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Student Registration System
+
+This is a web application for managing student registrations, built with Next.js and React. The project is bootstrapped with `create-next-app` and configured with a modern, robust toolchain focused on code quality, maintainability, and accessibility.
+
+## ✨ Features & Tech Stack
+
+This project utilizes a range of modern technologies to ensure a high-quality development experience and a performant end product.
+
+- **Framework**: Next.js - A comprehensive React framework for production.
+- **Language**: TypeScript - For static typing and improved developer experience.
+- **UI Library**: React - For building interactive user interfaces.
+- **Code Quality**: ESLint - To find and fix problems in JavaScript/TypeScript code. It is configured with:
+  - `eslint-plugin-react-hooks`: Enforces the rules of hooks to prevent common mistakes.
+  - `eslint-plugin-jsx-a11y`: Checks for accessibility issues in your JSX.
+  - `eslint-plugin-import`: Ensures module imports are correct and follow best practices.
+- **Font Optimization**: This project uses `next/font` to automatically optimize and load Geist, the Vercel font family.
 
 ## Getting Started
 
-First, run the development server:
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+Make sure you have Node.js (version 18.x or later recommended) installed on your system.
+
+### Installation
+
+1.  Clone the repository to your local machine:
+    ```bash
+    git clone <your-repository-url>
+    cd student-registration
+    ```
+
+2.  Install the project dependencies using your preferred package manager:
+    ```bash
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    # or
+    bun install
+    ```
+
+### Running the Development Server
+
+To start the development server, run the following command:
 
 ```bash
 npm run dev

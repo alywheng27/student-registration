@@ -56,6 +56,17 @@ export function StudentDashboard() {
     }
   }
 
+  const getStepColor = (step) => {
+    switch (step) {
+      case "Document Verification":
+        return "bg-blue-500 text-white"
+      case "Eligibility Check":
+        return "bg-yellow-500"
+      default:
+        return "bg-green-500 text-white"
+    }
+  }
+
   const requiredDocuments = ['Birth Certificate', 'Good Moral', 'Grade Card']
   let uploadedDocuments = []
   let missingDocuments = []
@@ -65,8 +76,17 @@ export function StudentDashboard() {
     documents.good_moral !== null ? uploadedDocuments.push('Good Moral') : missingDocuments.push('Good Moral')
     documents.grade_card !== null ? uploadedDocuments.push('Grade Card') : missingDocuments.push('Grade Card')
   }
+  
+  const requiredSteps = 3
+  let steps = 0
 
-  const completionPercentage = (uploadedDocuments.length / requiredDocuments.length) * 100
+  
+  if (application) {
+    console.log(application.Steps.step)
+    steps = application.Steps.step === "Document Verification" ? 1 : application.Steps.step === "Eligibility Check" ? 2 : 3
+  }
+
+  const completionPercentage = (steps /requiredSteps) * 100
 
   const handleUploadDocuments = () => {
     router.push("/documents")
@@ -77,7 +97,7 @@ export function StudentDashboard() {
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Welcome, {profile && profile.first_name}</h1>
+          <h1 className="text-3xl font-bold text-foreground">Welcome, {profile && profile.first_name} {profile && profile.surname}</h1>
           <p className="text-muted-foreground">Email: {user && user.email}</p>
         </div>
         <Badge className={getStatusColor(application && application.Status.status)}>{application && application.Status.status}</Badge>
@@ -86,11 +106,16 @@ export function StudentDashboard() {
       {/* Application Status Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Application Status
-          </CardTitle>
-          <CardDescription>Track your application progress and requirements</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Application Status
+            </CardTitle>
+            <CardDescription>Track your application progress and requirements</CardDescription>
+            </div>
+            <Badge className={getStepColor(application && application.Steps.step)}>{application && application.Steps.step}</Badge>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
