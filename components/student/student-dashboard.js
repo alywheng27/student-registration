@@ -8,7 +8,6 @@ import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/lib/auth"
 import { FileText, Upload, User, Bell } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { getProfile, getApplication, getDocuments } from "@/lib/student_info"
 
 export function StudentDashboard() {
@@ -16,7 +15,6 @@ export function StudentDashboard() {
   const [application, setApplication] = useState()
   const [documents, setDocuments] = useState()
   const { user } = useAuth()
-  const router = useRouter()
 
   const profileData = async () => {
     const data = await getProfile(user.id)
@@ -88,10 +86,6 @@ export function StudentDashboard() {
 
   const completionPercentage = (steps /requiredSteps) * 100
 
-  const handleUploadDocuments = () => {
-    router.push("/documents")
-  }
-
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -139,7 +133,7 @@ export function StudentDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link href="/documents">
+        <Link href="/student/document">
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardContent className="flex items-center space-x-4 p-6">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
@@ -203,10 +197,12 @@ export function StudentDashboard() {
               )
             })}
           </div>
-          <Button className="w-full mt-4 flex items-center gap-2" onClick={handleUploadDocuments} size="lg">
-            <Upload className="h-4 w-4" />
-            Upload Documents
-          </Button>
+          <Link href="/student/document">
+            <Button className="w-full mt-4 flex items-center gap-2" size="lg">
+              <Upload className="h-4 w-4" />
+              Upload Documents
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

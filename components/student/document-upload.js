@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,37 +9,60 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAuth } from "@/lib/auth"
-import { Upload, File, X, Check, AlertCircle, Eye, Calendar, FileText, User } from "lucide-react"
+import { getDocuments } from "@/lib/student_info"
+import { Upload, File, X, Check, AlertCircle, CircleCheck, CircleAlert, Eye, Calendar, FileText, User } from "lucide-react"
 
 
 export function DocumentUpload({ onUploadComplete }) {
-  const { user } = useAuth()
-  const student = user
+  const { user, updateDocuments } = useAuth()
   const fileInputRef = useRef(null)
+  const [formData, setFormData] = useState({
+    id: "",
+    document: null,
+    type: "",
+  })
+  const [documents, setDocuments] = useState()
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState("")
+  const [documentSuccess, setDocumentSuccess] = useState(null)
+  const [documentError, setDocumentError] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const [currentFileName, setCurrentFileName] = useState("")
   const [selectedDocumentType, setSelectedDocumentType] = useState("")
   const [selectedDocument, setSelectedDocument] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [pendingFile, setPendingFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [isImagePreview, setIsImagePreview] = useState(false)
 
   const documentTypes = [
-    { value: "id", label: "ID Document", description: "Government-issued photo ID" },
-    { value: "transcript", label: "Academic Transcript", description: "Official academic records" },
-    { value: "birth_certificate", label: "Birth Certificate", description: "Official birth certificate" },
-    { value: "other", label: "Other", description: "Other supporting documents" },
-  ]
-
-  const requiredDocuments = [
-    { type: "id", name: "ID Document", description: "Government-issued photo ID" },
-    { type: "transcript", name: "Academic Transcript", description: "Official academic records" },
-    { type: "birth_certificate", name: "Birth Certificate", description: "Official birth certificate" },
+    { value: "birth_certificate", label: "Birth Certificate", description: "PSA Birth Certificate" },
+    { value: "good_moral", label: "Good Moral", description: "Official Good Moral" },
+    { value: "grade_card", label: "Grade Card", description: "Official Grade Card" },
   ]
 
   const acceptedFileTypes = [".pdf", ".jpg", ".jpeg", ".png"]
   const maxFileSize = 5 * 1024 * 1024 // 5MB
+
+  const documentsData = async () => {
+    const data = await getDocuments(user.id)
+
+    setDocuments(data)
+  }
+
+  useEffect(() => {
+    if (!user) return
+
+    documentsData()
+  }, [user])
+
+  // cleanup object URL when preview changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -85,19 +108,32 @@ export function DocumentUpload({ onUploadComplete }) {
   }
 
   const handleFiles = async (files) => {
-    const file = files[0]
-    if (!file) return
+    if (!files[0]) return
 
-    const validationError = validateFile(file)
+    const validationError = validateFile(files[0])
     if (validationError) {
       setError(validationError)
       return
     }
 
     setError("")
+    // hold the file for explicit submit by user
+    setPendingFile(files[0])
+    setCurrentFileName(files[0].name)
+
+    if (!user) return
+    setFormData({ id: user.id, document: files[0], type: selectedDocumentType})
+
+    const objectUrl = URL.createObjectURL(files[0])
+    setPreviewUrl(objectUrl)
+    setIsImagePreview(files[0].type?.startsWith("image/"))
+  }
+
+  const submitFile = async () => {
+    if (!pendingFile) return
+
     setUploading(true)
     setUploadProgress(0)
-    setCurrentFileName(file.name)
 
     try {
       const uploadInterval = setInterval(() => {
@@ -112,24 +148,29 @@ export function DocumentUpload({ onUploadComplete }) {
 
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      const newDocument = {
-        id: Date.now().toString(),
-        name: file.name.split(".")[0],
-        type: selectedDocumentType,
-        fileName: file.name,
-        fileUrl: URL.createObjectURL(file),
-        uploadedAt: new Date(),
-        status: "pending",
-      }
-
-      console.log("[v0] Document uploaded:", newDocument)
+      const result = await updateDocuments({
+        ...formData
+      });
 
       setUploadProgress(100)
+
+      if (result.success) {
+        setDocumentSuccess(result.message || "Document update successful")
+      } else {
+        setDocumentError(result.error || "Document update failed")
+      }
+
       setTimeout(() => {
         setUploading(false)
         setUploadProgress(0)
         setCurrentFileName("")
         setSelectedDocumentType("")
+        setPendingFile(null)
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl)
+          setPreviewUrl(null)
+          setIsImagePreview(false)
+        }
         onUploadComplete?.()
       }, 500)
     } catch (err) {
@@ -140,9 +181,22 @@ export function DocumentUpload({ onUploadComplete }) {
     }
   }
 
+  const removeSelectedFile = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+      setPreviewUrl(null)
+    }
+    setPendingFile(null)
+    setCurrentFileName("")
+  }
+
   const getDocumentStatus = (docType) => {
-    const uploaded = student.documents.find((doc) => doc.type === docType)
-    return uploaded ? uploaded.status : "missing"
+    let uploaded
+    if (documents.docType) {
+      const type = docType + '_status'
+      return uploaded ? documents.type : "missing"
+    }
+    
   }
 
   const getStatusIcon = (status) => {
@@ -279,27 +333,64 @@ export function DocumentUpload({ onUploadComplete }) {
                     <p className="text-sm text-amber-600 mt-2">Please select a document type first</p>
                   )}
                 </div>
+
+                {/* Pending file preview + actions */}
+                {pendingFile && (
+                  <div className="mt-4 flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-3">
+                      {isImagePreview ? (
+                        <img src={previewUrl} alt={currentFileName} className="h-20 w-20 object-contain rounded" />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <File className="h-6 w-6 text-muted-foreground" />
+                          <span className="text-sm font-medium">{currentFileName}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2 mt-5">
+                      <Button onClick={(e) => { e.stopPropagation(); submitFile(); }} disabled={!pendingFile || uploading}>
+                        Submit
+                      </Button>
+                      <Button variant="outline" onClick={(e) => { e.stopPropagation(); removeSelectedFile(); }} disabled={uploading}>
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
+          {documentSuccess && (
+            <Alert className="mt-5 text-green-700">
+              <CircleCheck />
+              <AlertDescription className="text-green-700">{documentSuccess}</AlertDescription>
+            </Alert>
+          )}
+
+          {documentError && (
+            <Alert variant="destructive" className="mt-5">
+              <CircleAlert />
+              <AlertDescription>{documentError}</AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Required Documents</CardTitle>
           <CardDescription>Track your document submission progress</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {requiredDocuments.map((doc) => {
-              const status = getDocumentStatus(doc.type)
+            {documentTypes.map((doc) => {
+              const status = getDocumentStatus(doc.value)
               return (
-                <div key={doc.type} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={doc.value} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     {getStatusIcon(status)}
                     <div>
-                      <h4 className="font-medium">{doc.name}</h4>
+                      <h4 className="font-medium">{doc.label}</h4>
                       <p className="text-sm text-muted-foreground">{doc.description}</p>
                     </div>
                   </div>
@@ -316,9 +407,9 @@ export function DocumentUpload({ onUploadComplete }) {
             })}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
-      {student.documents.length > 0 && (
+      {/* {student.documents.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Uploaded Documents</CardTitle>
@@ -351,23 +442,23 @@ export function DocumentUpload({ onUploadComplete }) {
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
+          {/* <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Document Details
             </DialogTitle>
             <DialogDescription>View detailed information about your uploaded document</DialogDescription>
-          </DialogHeader>
+          </DialogHeader> */}
 
           {selectedDocument && (
             <div className="space-y-6">
               {/* Document Preview Section */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                <div className="flex items-center justify-between mb-4">
+                {/* <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <File className="h-6 w-6 text-primary" />
@@ -380,20 +471,20 @@ export function DocumentUpload({ onUploadComplete }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">{getStatusBadge(selectedDocument.status)}</div>
-                </div>
+                </div> */}
 
                 {/* Document preview placeholder */}
-                <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                {/* <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                   <div className="text-center">
                     <File className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500">Document Preview</p>
                     <p className="text-xs text-gray-400">Click to view full document</p>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Document Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Document Type</label>
@@ -448,10 +539,10 @@ export function DocumentUpload({ onUploadComplete }) {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Status-specific information */}
-              {selectedDocument.status === "rejected" && (
+              {/* {selectedDocument.status === "rejected" && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -476,10 +567,10 @@ export function DocumentUpload({ onUploadComplete }) {
                     This document has been approved and meets all requirements.
                   </AlertDescription>
                 </Alert>
-              )}
+              )} */}
 
               {/* Action buttons */}
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              {/* <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                   Close
                 </Button>
@@ -487,7 +578,7 @@ export function DocumentUpload({ onUploadComplete }) {
                   <Eye className="h-4 w-4 mr-2" />
                   Open Document
                 </Button>
-              </div>
+              </div> */}
             </div>
           )}
         </DialogContent>
