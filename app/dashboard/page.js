@@ -35,7 +35,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-[10%] py-8">
+      <main className="container mx-auto sm:px-4 lg:px-[10%] py-8">
         {/* {user.role === "student" ? <StudentDashboard /> : <AdminDashboard />} */}
         <StudentDashboard />
       </main>

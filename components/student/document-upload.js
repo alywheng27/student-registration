@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +9,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAuth } from "@/lib/auth"
-import { getDocuments } from "@/lib/student_info"
-import { Upload, File, X, Check, AlertCircle, CircleCheck, CircleAlert, Eye, Calendar, FileText, User } from "lucide-react"
+import { getDocuments, getProfile } from "@/lib/student_info"
+import { Upload, File, X, Check, AlertCircle, CircleCheck, CircleAlert, RectangleEllipsis, CircleDashed, Eye, Calendar, FileText, User } from "lucide-react"
+import Link from "next/link"
 
 
 export function DocumentUpload({ onUploadComplete }) {
@@ -22,6 +23,7 @@ export function DocumentUpload({ onUploadComplete }) {
     type: "",
   })
   const [documents, setDocuments] = useState()
+  const [profile, setProfile] = useState()
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState("")
@@ -48,21 +50,27 @@ export function DocumentUpload({ onUploadComplete }) {
   const documentsData = async () => {
     const data = await getDocuments(user.id)
 
-    setDocuments(data)
+    const dataObject = [
+      { type: 'birth_certificate', name: data.birth_certificate, status: data.birth_certificate_status },
+      { type: 'good_moral', name: data.good_moral, status: data.good_moral_status },
+      { type: 'grade_card', name: data.grade_card, status: data.grade_card_status },
+    ]
+    setDocuments(dataObject)
+  }
+
+  const profileData = async () => {
+    const data = await getProfile(user.id)
+    setProfile(data)
   }
 
   useEffect(() => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+
     if (!user) return
 
     documentsData()
-  }, [user])
-
-  // cleanup object URL when preview changes or component unmounts
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
-    }
-  }, [previewUrl])
+    profileData()
+  }, [user, previewUrl])
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -190,39 +198,49 @@ export function DocumentUpload({ onUploadComplete }) {
     setCurrentFileName("")
   }
 
-  const getDocumentStatus = (docType) => {
-    let uploaded
-    if (documents.docType) {
-      const type = docType + '_status'
-      return uploaded ? documents.type : "missing"
+  // memoize status mapping so derived status values are recomputed only when `documents` changes
+  const documentStatusMap = useMemo(() => {
+    if (!documents) return {}
+    return {
+      birth_certificate: documents[0].status ?? 0,
+      good_moral: documents[1].status ?? 0,
+      grade_card: documents[2].status ?? 0,
     }
-    
+  }, [documents])
+
+  const getDocumentStatus = (docType) => {
+    return documentStatusMap[docType] ?? 0
   }
+
+  const statusIconMap = useMemo(() => {
+    return {
+      1: <CircleDashed className="h-4 w-4 text-gray-500" />,
+      2: <RectangleEllipsis className="h-4 w-4 text-blue-500" />,
+      3: <Check className="h-4 w-4 text-green-500" />,
+      4: <X className="h-4 w-4 text-red-500" />,
+      5: <AlertCircle className="h-4 w-4 text-yellow-500" />,
+      default: <Upload className="h-4 w-4 text-gray-400" />,
+    }
+  }, [])
 
   const getStatusIcon = (status) => {
-    switch (status) {
-      case "approved":
-        return <Check className="h-4 w-4 text-green-500" />
-      case "rejected":
-        return <X className="h-4 w-4 text-red-500" />
-      case "pending":
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />
-      default:
-        return <Upload className="h-4 w-4 text-gray-400" />
-    }
+    return statusIconMap[status] ?? statusIconMap.default
   }
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "approved":
-        return <Badge className="bg-green-500">Approved</Badge>
-      case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>
-      case "pending":
-        return <Badge className="bg-yellow-500">Under Review</Badge>
-      default:
-        return <Badge variant="secondary">Not Uploaded</Badge>
+  // memoized mapping of status -> badge to avoid recreating elements on each render
+  const statusBadgeMap = useMemo(() => {
+    return {
+      1: <Badge className="bg-gray-500 text-white">Pending</Badge>,
+      2: <Badge className="bg-blue-500 text-white">In Progress</Badge>,
+      3: <Badge className="bg-green-500 text-white">Approved</Badge>,
+      4: <Badge className="bg-red-500 text-white">Rejected</Badge>,
+      5: <Badge className="bg-yellow-500">Incomplete</Badge>,
+      default: <Badge variant="secondary">Not Uploaded</Badge>,
     }
+  }, [])
+
+  const getStatusBadge = (status) => {
+    return statusBadgeMap[status] ?? statusBadgeMap.default
   }
 
   const getDocumentTypeLabel = (type) => {
@@ -249,7 +267,8 @@ export function DocumentUpload({ onUploadComplete }) {
   }
 
   const handleViewDocument = (doc) => {
-    setSelectedDocument(doc)
+    const docSelected = documents.find((d) => d.type === doc.value)
+    setSelectedDocument(docSelected)
     setIsModalOpen(true)
   }
 
@@ -343,7 +362,7 @@ export function DocumentUpload({ onUploadComplete }) {
                       ) : (
                         <div className="flex items-center gap-2">
                           <File className="h-6 w-6 text-muted-foreground" />
-                          <span className="text-sm font-medium">{currentFileName}</span>
+                          <span className="text-sm font-medium max-w-xs truncate" title={currentFileName}>{currentFileName}</span>
                         </div>
                       )}
                     </div>
@@ -376,7 +395,7 @@ export function DocumentUpload({ onUploadComplete }) {
         </CardContent>
       </Card>
 
-      {/* <Card>
+      <Card>
         <CardHeader>
           <CardTitle>Required Documents</CardTitle>
           <CardDescription>Track your document submission progress</CardDescription>
@@ -396,20 +415,19 @@ export function DocumentUpload({ onUploadComplete }) {
                   </div>
                   <div className="flex items-center space-x-2">
                     {getStatusBadge(status)}
-                    {status === "missing" && (
-                      <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                        Upload
-                      </Button>
-                    )}
+                    <Button size="sm" variant="outline" onClick={() => handleViewDocument(doc)}>
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
                   </div>
                 </div>
               )
             })}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
-      {/* {student.documents.length > 0 && (
+      {/* {documents && (
         <Card>
           <CardHeader>
             <CardTitle>Uploaded Documents</CardTitle>
@@ -417,12 +435,12 @@ export function DocumentUpload({ onUploadComplete }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {student.documents.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+              {documents.map((doc) => (
+                <div key={doc.type} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     <File className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="font-semibold text-base">{doc.fileName}</h4>
+                       <h4 className="font-semibold text-base max-w-xs truncate" title={doc.name}>{doc.name}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="font-medium text-primary">{getDocumentTypeLabel(doc.type)}</span>
                         <span>•</span>
@@ -445,46 +463,48 @@ export function DocumentUpload({ onUploadComplete }) {
       )} */}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl">
-          {/* <DialogHeader>
+        <DialogContent className="min-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Document Details
             </DialogTitle>
             <DialogDescription>View detailed information about your uploaded document</DialogDescription>
-          </DialogHeader> */}
+          </DialogHeader>
 
           {selectedDocument && (
             <div className="space-y-6">
               {/* Document Preview Section */}
               <div className="border rounded-lg p-4 bg-muted/30">
-                {/* <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <File className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">{selectedDocument.fileName}</h3>
+                      <h3 className="font-semibold text-lg max-w-xs truncate" title={selectedDocument.name}>{selectedDocument.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         {getDocumentTypeDescription(selectedDocument.type)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">{getStatusBadge(selectedDocument.status)}</div>
-                </div> */}
+                </div>
 
                 {/* Document preview placeholder */}
-                {/* <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                  <div className="text-center">
-                    <File className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">Document Preview</p>
-                    <p className="text-xs text-gray-400">Click to view full document</p>
+                <Link href={selectedDocument.name} target="_blank">
+                  <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                    <div className="text-center">
+                      <File className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Document Preview</p>
+                      <p className="text-xs text-gray-400">Click to view full document</p>
+                    </div>
                   </div>
-                </div> */}
+                </Link>
               </div>
 
               {/* Document Information */}
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Document Type</label>
@@ -493,10 +513,10 @@ export function DocumentUpload({ onUploadComplete }) {
 
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">File Name</label>
-                    <p className="text-base">{selectedDocument.fileName}</p>
+                    <p className="text-base max-w-xs truncate" title={selectedDocument.name}>{selectedDocument.name}</p>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <label className="text-sm font-medium text-muted-foreground">Upload Date</label>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -510,75 +530,93 @@ export function DocumentUpload({ onUploadComplete }) {
                           : "Unknown date"}
                       </p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Status</label>
                     <div className="flex items-center gap-2 mt-1">
-                      {getStatusIcon(selectedDocument.status)}
+                      {/* {getStatusIcon(selectedDocument.status)} */}
                       <p className={`text-base font-medium ${getStatusColor(selectedDocument.status)}`}>
-                        {selectedDocument.status.charAt(0).toUpperCase() + selectedDocument.status.slice(1)}
+                        {getStatusBadge(selectedDocument.status)}
                       </p>
                     </div>
                   </div>
 
-                  <div>
+                  {/* <div>
                     <label className="text-sm font-medium text-muted-foreground">Document ID</label>
                     <p className="text-base font-mono text-sm">{selectedDocument.id}</p>
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Submitted By</label>
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <p className="text-base">
-                        {student.firstName} {student.lastName}
+                        {profile.first_name} {profile.surname}
                       </p>
                     </div>
                   </div>
                 </div>
-              </div> */}
+              </div>
 
               {/* Status-specific information */}
-              {/* {selectedDocument.status === "rejected" && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    This document was rejected. Please review the feedback and upload a corrected version.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {selectedDocument.status === "pending" && (
+              {selectedDocument.status === 1 && (
                 <Alert>
-                  <AlertCircle className="h-4 w-4" />
+                  <CircleDashed className="h-4 w-4" />
                   <AlertDescription>
                     This document is currently under review. You will be notified once the review is complete.
                   </AlertDescription>
                 </Alert>
               )}
 
-              {selectedDocument.status === "approved" && (
+              {selectedDocument.status === 2 && (
+                <Alert className="border-blue-200 bg-blue-50">
+                  <RectangleEllipsis className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
+                    Document in progress — we&apos;ll notify you when it&apos;s complete (1–3 business days).
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {selectedDocument.status === 3 && (
                 <Alert className="border-green-200 bg-green-50">
                   <Check className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800">
                     This document has been approved and meets all requirements.
                   </AlertDescription>
                 </Alert>
-              )} */}
+              )}
+
+              {selectedDocument.status === 4 && (
+                <Alert variant="destructive">
+                  <X className="h-4 w-4" />
+                  <AlertDescription>
+                    This document was rejected. Please review the feedback and upload a corrected version.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {selectedDocument.status === 5 && (
+                <Alert className="border-yellow-200 bg-yellow-50">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    Document incomplete — please resubmit with the missing information.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Action buttons */}
-              {/* <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                   Close
                 </Button>
-                <Button onClick={() => window.open(selectedDocument.fileUrl, "_blank")}>
+                <Button onClick={() => window.open(selectedDocument.name, "_blank")}>
                   <Eye className="h-4 w-4 mr-2" />
                   Open Document
                 </Button>
-              </div> */}
+              </div>
             </div>
           )}
         </DialogContent>

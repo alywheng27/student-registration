@@ -80,7 +80,6 @@ export function StudentDashboard() {
 
   
   if (application) {
-    console.log(application.Steps.step)
     steps = application.Steps.step === "Document Verification" ? 1 : application.Steps.step === "Eligibility Check" ? 2 : 3
   }
 

@@ -60,7 +60,7 @@ export default function DocumentsPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto sm:px-4 lg:px-[10%] py-8">
         <DocumentUpload />
       </main>
     </div>
