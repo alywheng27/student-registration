@@ -32,7 +32,7 @@ import {
 import { getProfile, getAddress, getSchoolAttended, getParents, getEmergencyContact, getDocuments } from "@/lib/student_info"
 
 export default function ProfilePage() {
-  const { user, userRole, updateUser } = useAuth()
+  const { user, userRole, updateUser, updatePassword, logout } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
@@ -261,8 +261,10 @@ export default function ProfilePage() {
       return
     }
 
-    if (passwordData.newPassword.length < 6) {
-      toast("Password must be at least 6 characters long.", { type: "error" })
+    // Require: min 8 chars, at least 1 lowercase, 1 uppercase, 1 number, and 1 special char
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/
+    if (!passwordRegex.test(passwordData.newPassword)) {
+      toast("Password must be at least 8 characters and include uppercase, lowercase, number, and special character.", { type: "error" })
       setPasswordLoading(false)
       return
     }
@@ -271,7 +273,7 @@ export default function ProfilePage() {
       const result = await updatePassword(passwordData.currentPassword, passwordData.newPassword)
 
       if (result.success) {
-        toast("Your password has been successfully changed.", { type: "success" })
+        toast(result.message || "User password updated successfully!", { type: "success" })
         setPasswordData({
           currentPassword: "",
           newPassword: "",
@@ -337,9 +339,9 @@ export default function ProfilePage() {
               unstyled: true,
               classNames: {
                 toast: "flex align-items-center border rounded-lg space-x-3 px-5 py-3 text-sm",
-                error: "border-red-500 text-red-700 bg-red-50",
+                error: "border-red-500 text-red-700",
                 success: "border-green-500 text-green-700",
-                info: "border-blue-500 text-blue-700 bg-blue-50",
+                info: "border-blue-500 text-blue-700",
               },
             }}      
           />
@@ -760,7 +762,7 @@ export default function ProfilePage() {
                 </TabsContent>
 
                 <TabsContent value="security">
-                  {/* <Card>
+                  <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Lock className="h-5 w-5" />
@@ -885,7 +887,7 @@ export default function ProfilePage() {
                         </div>
                       </form>
                     </CardContent>
-                  </Card> */}
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>

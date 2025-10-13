@@ -185,8 +185,10 @@ export function RegisterForm() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    // Require: min 8 chars, at least 1 lowercase, 1 uppercase, 1 number, and 1 special char
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setError("Password must be at least 8 characters and include uppercase, lowercase, number, and special character");
       setLoading(false);
       return;
     }
