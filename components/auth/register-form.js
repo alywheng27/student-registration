@@ -451,39 +451,6 @@ export function RegisterForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="region">Region *</Label>
-              <Select
-                value={formData.region}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, region: value }))}
-                name="region"
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select region" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">National Capital Region (NCR)</SelectItem>
-                  <SelectItem value="2">Cordillera Administrative Region (CAR)</SelectItem>
-                  <SelectItem value="3">Ilocos Region (Region I)</SelectItem>
-                  <SelectItem value="4">Cagayan Valley (Region II)</SelectItem>
-                  <SelectItem value="5">Central Luzon (Region III)</SelectItem>
-                  <SelectItem value="6">CALABARZON (Region IV-A)</SelectItem>
-                  <SelectItem value="7">MIMAROPA Region (Region IV-B)</SelectItem>
-                  <SelectItem value="8">Bicol Region (Region V)</SelectItem>
-                  <SelectItem value="9">Western Visayas (Region VI)</SelectItem>
-                  {/* <SelectItem value="NIR">Negros Island Region (NIR)</SelectItem> */}
-                  <SelectItem value="10">Central Visayas (Region VII)</SelectItem>
-                  <SelectItem value="11">Eastern Visayas (Region VIII)</SelectItem>
-                  <SelectItem value="12">Zamboanga Peninsula (Region IX)</SelectItem>
-                  <SelectItem value="13">Northern Mindanao (Region X)</SelectItem>
-                  <SelectItem value="14">Davao Region (Region XI)</SelectItem>
-                  <SelectItem value="15">SOCCSKSARGEN (Region XII)</SelectItem>
-                  <SelectItem value="16">Caraga (Region XIII)</SelectItem>
-                  <SelectItem value="17">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="sex">Sex *</Label>
               <Select
                 value={formData.sex}
@@ -521,11 +488,12 @@ export function RegisterForm() {
               </Select>
             </div>
           </div>
+          <hr />
 
           {/* Address Details Section */}
           <div className="mt-6">
             <div className="mb-2 text-lg font-semibold text-primary">Address Details</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
               <div className="space-y-2">
                 <Label htmlFor="barangay">Barangay *</Label>
                 <Input
@@ -562,16 +530,50 @@ export function RegisterForm() {
                   required
                 />
               </div>
+              <div className="space-y-2">
+              <Label htmlFor="region">Region *</Label>
+              <Select
+                value={formData.region}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, region: value }))}
+                name="region"
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select region" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">National Capital Region (NCR)</SelectItem>
+                  <SelectItem value="2">Cordillera Administrative Region (CAR)</SelectItem>
+                  <SelectItem value="3">Ilocos Region (Region I)</SelectItem>
+                  <SelectItem value="4">Cagayan Valley (Region II)</SelectItem>
+                  <SelectItem value="5">Central Luzon (Region III)</SelectItem>
+                  <SelectItem value="6">CALABARZON (Region IV-A)</SelectItem>
+                  <SelectItem value="7">MIMAROPA Region (Region IV-B)</SelectItem>
+                  <SelectItem value="8">Bicol Region (Region V)</SelectItem>
+                  <SelectItem value="9">Western Visayas (Region VI)</SelectItem>
+                  {/* <SelectItem value="NIR">Negros Island Region (NIR)</SelectItem> */}
+                  <SelectItem value="10">Central Visayas (Region VII)</SelectItem>
+                  <SelectItem value="11">Eastern Visayas (Region VIII)</SelectItem>
+                  <SelectItem value="12">Zamboanga Peninsula (Region IX)</SelectItem>
+                  <SelectItem value="13">Northern Mindanao (Region X)</SelectItem>
+                  <SelectItem value="14">Davao Region (Region XI)</SelectItem>
+                  <SelectItem value="15">SOCCSKSARGEN (Region XII)</SelectItem>
+                  <SelectItem value="16">Caraga (Region XIII)</SelectItem>
+                  <SelectItem value="17">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             </div>
           </div>
+          <hr />
 
           {/* School Attended Section */}
           <div className="mt-8">
             <div className="mb-2 text-lg font-semibold text-primary">School Attended</div>
             {/* Elementary School */}
-            <div className="mb-4">
+            <div className="mb-4 mt-5">
               <div className="mb-1 font-medium">Elementary School</div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-3">
                 <div className="space-y-2">
                   <Label htmlFor="elementary_school">School Name</Label>
                   <Input
@@ -610,7 +612,7 @@ export function RegisterForm() {
             {/* Junior High School */}
             <div className="mb-4">
               <div className="mb-1 font-medium">Junior High School</div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-3">
                 <div className="space-y-2">
                   <Label htmlFor="junior_high_school">School Name</Label>
                   <Input
@@ -649,7 +651,7 @@ export function RegisterForm() {
             {/* Senior High School */}
             <div>
               <div className="mb-1 font-medium">Senior High School</div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-3">
                 <div className="space-y-2">
                   <Label htmlFor="senior_high_school">School Name</Label>
                   <Input
@@ -686,11 +688,12 @@ export function RegisterForm() {
               </div>
             </div>
           </div>
+          <hr />
 
           {/* Parents Section */}
           <div className="mt-8">
             <div className="mb-2 text-lg font-semibold text-primary">Parents</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
               <div className="space-y-2">
                 <Label htmlFor="father_name">Father&apos;s Name *</Label>
                 <Input
@@ -777,11 +780,12 @@ export function RegisterForm() {
               </div>
             </div>
           </div>
+          <hr />
 
           {/* Emergency Contact Section */}
           <div className="mt-8">
             <div className="mb-2 text-lg font-semibold text-primary">Emergency Contact</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
               <div className="space-y-2">
                 <Label htmlFor="emergency_name">Name *</Label>
                 <Input
@@ -832,11 +836,12 @@ export function RegisterForm() {
               </div>
             </div>
           </div>
+          <hr />
 
           {/* Requirements Section */}
           <div className="mt-8">
             <div className="mb-2 text-lg font-semibold text-primary">Requirements</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
               {/* Birth Certificate */}
               <div className="space-y-2">
                 <Label htmlFor="birth_certificate">Birth Certificate *</Label>
@@ -887,6 +892,7 @@ export function RegisterForm() {
               </div>
             </div>
           </div>
+          <hr />
 
           {/* Password Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

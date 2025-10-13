@@ -123,30 +123,6 @@ export async function POST(request) {
 
     console.log("✅ User account created successfully");
 
-    // Insert user address data into Address table
-    console.log("💾 Inserting user address data into database...");
-    const addressData = {
-      uid: data.user.id,
-      barangay,
-      municipality,
-      province,
-    };
-        
-    const { error: addressError } = await supabase.from("Address").insert(addressData);
-
-    if (addressError) {
-      console.error("❌ Address creation error:", addressError);
-      // Don't fail registration if address creation fails
-      if (addressError.message === 'duplicate key value violates unique constraint "Address_uid_key"') {
-        return NextResponse.json(
-          { error: "User already exists" },
-          { status: 400 }
-        );
-      }
-    } else {
-      console.log("✅ Address data inserted successfully");
-    }
-
     // Handle profile photo upload if provided
     let photoUrl = null;
     if (profilePhoto && profilePhoto.size > 0) {
@@ -205,6 +181,28 @@ export async function POST(request) {
       );
     } else {
       console.log("✅ Profile data inserted successfully");
+    }
+
+    // Insert user address data into Address table
+    console.log("💾 Inserting user address data into database...");
+    const addressData = {
+      uid: data.user.id,
+      barangay,
+      municipality,
+      province,
+    };
+        
+    const { error: addressError } = await supabase.from("Address").insert(addressData);
+
+    if (addressError) {
+      console.error("❌ Address creation error:", addressError);
+      // Don't fail registration if address creation fails
+      return NextResponse.json(
+        { error: addressError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Address data inserted successfully");
     }
 
     // Insert user school attended data into School_Attended table
@@ -438,6 +436,282 @@ export async function POST(request) {
     });
     return NextResponse.json(
       { error: "An unexpected error occurred during registration." },
+      { status: 500 }
+    );
+  }
+}
+
+
+export async function PUT(request) {
+  try {
+    console.log("🚀 Starting student update process...");
+
+    // Parse FormData instead of JSON to handle file uploads
+    console.log("📝 Parsing FormData...");
+    const formData = await request.formData();
+
+    const uid = formData.get('uid');
+
+    const first_name = formData.get('first_name');
+    const middle_name = formData.get('middle_name');
+    const surname = formData.get('surname');
+    const extension_name = formData.get('extension_name');
+    const phone = formData.get('phone');
+    const date_of_birth_raw = formData.get('date_of_birth');
+    const profilePhoto = formData.get('profilePhoto');
+
+    // New fields
+    const place_of_birth = formData.get('place_of_birth')
+    const religion = formData.get('religion')
+    const citizenship = formData.get('citizenship')
+    const sex = formData.get('sex');
+    const civil_status = formData.get('civil_status');
+    const region = formData.get('region');
+    const barangay = formData.get('barangay');
+    const municipality = formData.get('municipality');
+    const province = formData.get('province');
+
+    // School fields
+    const elementary = formData.get('elementary_school')
+    const elementary_address = formData.get('elementary_school_address')
+    const elementary_year_graduated = formData.get('elementary_year_graduated')
+    const junior_high = formData.get('junior_high_school')
+    const junior_high_address = formData.get('junior_high_school_address')
+    const junior_high_year_graduated = formData.get('junior_high_year_graduated')
+    const senior_high = formData.get('senior_high_school')
+    const senior_high_address = formData.get('senior_high_school_address')
+    const senior_high_year_graduated = formData.get('senior_high_year_graduated')
+
+    // Parents
+    const father_name = formData.get('father_name')
+    const father_occupation = formData.get('father_occupation')
+    const father_educational_attainment = formData.get('father_education')
+    const mother_name = formData.get('mother_name')
+    const mother_occupation = formData.get('mother_occupation')
+    const mother_educational_attainment = formData.get('mother_education')
+    const monthly_income = formData.get('monthly_income')
+    // Emergency
+    const name = formData.get('emergency_name')
+    const relationship = formData.get('emergency_relationship')
+    const home_address = formData.get('emergency_address')
+    const emergency_phone = formData.get('emergency_phone')
+
+    console.log("📋 Form data extracted");
+
+    // Convert date_of_birth to proper format for Supabase timestamptz type
+    let date_of_birth = null;
+    if (date_of_birth_raw) {
+      console.log("📅 Processing date_of_birth");
+      // Convert YYYY-MM-DD string to ISO timestamp for timestamptz
+      const date = new Date(date_of_birth_raw);
+      if (!isNaN(date.getTime())) {
+        // Convert to ISO string for timestamptz (includes timezone info)
+        date_of_birth = date.toISOString();
+        console.log("✅ Date converted to ISO timestamp");
+      } else {
+        console.error("❌ Invalid date format:", date_of_birth_raw);
+      }
+    } else {
+      console.log("📅 No date_of_birth provided");
+    }
+
+    // Validate required fields
+    console.log("🔍 Validating required fields...");
+    if (!first_name || !surname) {
+      console.error("❌ Validation failed - missing required fields:", {
+        first_name: !!first_name,
+        surname: !!surname
+      });
+      return NextResponse.json(
+        { error: "First name, and surname are required." },
+        { status: 400 }
+      );
+    }
+    console.log("✅ All required fields validated");
+
+    console.log("🔗 Creating Supabase client...");
+    const supabase = await createClient();
+
+    // Handle profile photo upload if provided
+    let photoUrl = null;
+    if (profilePhoto && profilePhoto.size > 0) {
+      console.log("📸 Processing profile photo upload...");
+      const fileExtension = profilePhoto.name.split('.').pop();
+      const fileName = `${data.user.id}-${Date.now()}.${fileExtension}`;
+      
+      console.log("📁 Uploading file");
+      
+      const { error: uploadError } = await supabase.storage
+        .from('Profiles')
+        .upload(fileName, profilePhoto);
+
+      if (uploadError) {
+        console.error("❌ Photo upload error:", uploadError);
+        // Don't fail registration if photo upload fails
+      } else {
+        console.log("✅ Photo uploaded successfully");
+        // Get public URL for the uploaded photo
+        const { data: photoData } = await supabase.storage
+          .from('Profiles')
+          .getPublicUrl(fileName);
+        photoUrl = photoData.publicUrl;
+      }
+    } else {
+      console.log("📸 No profile photo provided");
+    }
+
+    // Update user profile data into Profiles table
+    console.log("💾 Updating user profile data into database...");
+    let profileData = {
+      first_name,
+      middle_name,
+      surname,
+      extension_name,
+      phone,
+      date_of_birth,
+      place_of_birth,
+      religion,
+      citizenship,
+      sex_id: sex,
+      civil_status_id: civil_status,
+      region_id: region,
+    };
+    
+    profileData = photoUrl ? { ...profileData, photo_url: photoUrl } : { ...profileData }
+        
+    const { error: profileError } = await supabase.from("Profiles").update(profileData).eq("uid", uid).select()
+
+    if (profileError) {
+      console.error("❌ Profile update error:", profileError);
+      // Don't fail update if profile creation fails
+      return NextResponse.json(
+        { error: profileError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Profile data updated successfully");
+    }
+
+    // Update user address data into Address table
+    console.log("💾 Updating user address data into database...");
+    const addressData = {
+      uid,
+      barangay,
+      municipality,
+      province,
+    };
+        
+    const { error: addressError } = await supabase.from("Address").update(addressData).eq("uid", uid).select()
+
+    if (addressError) {
+      console.error("❌ Address update error:", addressError);
+      // Don't fail registration if address update fails
+      return NextResponse.json(
+        { error: addressError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Address data updated successfully");
+    }
+
+    // Update user school attended data into School_Attended table
+    console.log("💾 Updating user school attended data into database...");
+    const schoolAttendedData = {
+      uid,
+      elementary,
+      elementary_address,
+      elementary_year_graduated,
+      junior_high,
+      junior_high_address,
+      junior_high_year_graduated,
+      senior_high,
+      senior_high_address,
+      senior_high_year_graduated,
+    };
+        
+    const { error: schoolAttendedError } = await supabase.from("School_Attended").update(schoolAttendedData).eq("uid", uid).select()
+
+    if (schoolAttendedError) {
+      console.error("❌ School attended update error:", schoolAttendedError);
+      // Don't fail registration if school attended update fails
+      return NextResponse.json(
+        { error: schoolAttendedError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ School attended data updated successfully");
+    }
+
+    // Update user parents data into Parents table
+    console.log("💾 Updating user parents data into database...");
+    const parentsData = {
+      uid,
+      father_name,
+      father_occupation,
+      father_educational_attainment,
+      mother_name,
+      mother_occupation,
+      mother_educational_attainment,
+      monthly_income,
+    };
+        
+    const { error: parentsError } = await supabase.from("Parents").update(parentsData).eq("uid", uid).select()
+
+    if (parentsError) {
+      console.error("❌ Parents update error:", parentsError);
+      // Don't fail registration if parents update fails
+      return NextResponse.json(
+        { error: parentsError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Parents data updated successfully");
+    }
+
+    // Update user emergency contact data into Emergency_Contact table
+    console.log("💾 Updating user emergency contact data into database...");
+    const emergencyContactData = {
+      uid,
+      name,
+      relationship,
+      home_address,
+      phone: emergency_phone,
+    };
+        
+    const { error: emergencyContactError } = await supabase.from("Emergency_Contact").update(emergencyContactData).eq("uid", uid).select()
+
+    if (emergencyContactError) {
+      console.error("❌ Emergency contact update error:", emergencyContactError);
+      // Don't fail registration if emergency contact update fails
+      return NextResponse.json(
+        { error: emergencyContactError.message },
+        { status: 400 }
+      );
+    } else {
+      console.log("✅ Emergency contact data updated successfully");
+    }
+
+    const responseData = { 
+      user: uid, 
+      message: "User update process completed successfully!"
+    };
+    
+    console.log("🎉 User update process completed successfully");
+    console.log("📤 Sending response:", {
+      userId: responseData.user,
+      message: responseData.message
+    });
+
+    return NextResponse.json(responseData);
+  } catch (error) {
+    console.error("💥 Unexpected error during student update process:", error);
+    console.error("📊 Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    return NextResponse.json(
+      { error: "An unexpected error occurred during student update process." },
       { status: 500 }
     );
   }

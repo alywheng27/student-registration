@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,32 +37,30 @@ export function StudentDashboard() {
     profileData()
     applicationData()
     documentData()
+
+    console.log('work')
   }, [user]);
 
+  const statusColorMap = useMemo(() => ({
+    Pending: "bg-gray-300",
+    "In Progress": "bg-blue-500 text-white",
+    Approved: "bg-green-500 text-white",
+    Rejected: "bg-red-500 text-white",
+    default: "bg-yellow-500",
+  }), [])
+
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Pending":
-        return "bg-gray-300"
-      case "In Progress":
-        return "bg-blue-500 text-white"
-      case "Approved":
-        return "bg-green-500 text-white"
-      case "Rejected":
-        return "bg-red-500 text-white"
-      default:
-        return "bg-yellow-500"
-    }
+    return statusColorMap[status] ?? statusColorMap.default
   }
 
+  const stepColorMap = useMemo(() => ({
+    "Document Verification": "bg-blue-500 text-white",
+    "Eligibility Check": "bg-yellow-500",
+    default: "bg-green-500 text-white",
+  }), [])
+
   const getStepColor = (step) => {
-    switch (step) {
-      case "Document Verification":
-        return "bg-blue-500 text-white"
-      case "Eligibility Check":
-        return "bg-yellow-500"
-      default:
-        return "bg-green-500 text-white"
-    }
+    return stepColorMap[step] ?? stepColorMap.default
   }
 
   const requiredDocuments = ['Birth Certificate', 'Good Moral', 'Grade Card']
@@ -78,7 +76,6 @@ export function StudentDashboard() {
   const requiredSteps = 3
   let steps = 0
 
-  
   if (application) {
     steps = application.Steps.step === "Document Verification" ? 1 : application.Steps.step === "Eligibility Check" ? 2 : 3
   }
@@ -146,7 +143,7 @@ export function StudentDashboard() {
           </Card>
         </Link>
 
-        <Link href="/profile">
+        <Link href="/student/profile">
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardContent className="flex items-center space-x-4 p-6">
               <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">

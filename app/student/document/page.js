@@ -5,35 +5,28 @@ import { DocumentUpload } from "@/components/student/document-upload"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, LogOut } from "lucide-react"
 import Link from "next/link"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { useRouter } from "next/navigation"
 
 export default function DocumentsPage() {
   const { user, userRole, logout } = useAuth()
+  const router = useRouter()
 
-  // if (!user) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-  //         <p className="text-muted-foreground mb-4">Please log in to access documents</p>
-  //         <Button onClick={() => (window.location.href = "/")}>Go to Login</Button>
-  //       </div>
-  //     </div>
-  //   )
-  // }
-
-  // if (userRole !== "Student") {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-  //         <p className="text-muted-foreground mb-4">This page is only accessible to students</p>
-  //         <Link href="/dashboard">
-  //           <Button>Go to Dashboard</Button>
-  //         </Link>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) {
+      router.push("/");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,10 +45,28 @@ export default function DocumentsPage() {
             <span className="text-sm text-muted-foreground">
               {user && user.email} ({userRole})
             </span>
-            <Button variant="outline" size="sm" onClick={logout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirm Logout</DialogTitle>
+                  <DialogDescription>Are you sure you want to log out? You will need to sign in again to access your account.</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button onClick={handleLogout}>Logout</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </header>

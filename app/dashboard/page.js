@@ -5,6 +5,16 @@ import { StudentDashboard } from "@/components/student/student-dashboard"
 // import { AdminDashboard } from "@/components/admin/admin-dashboard"
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
@@ -27,10 +37,28 @@ export default function DashboardPage() {
             <span className="text-sm text-muted-foreground">
               {user && user.email} ({userRole})
             </span>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Confirm Logout</DialogTitle>
+                  <DialogDescription>Are you sure you want to log out? You will need to sign in again to access your account.</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button onClick={handleLogout}>Logout</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </header>
