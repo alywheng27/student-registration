@@ -1,80 +1,79 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format } from "date-fns"
+import {
+	ArrowLeft,
+	Calendar,
+	Camera,
+	Eye,
+	EyeOff,
+	Lock,
+	LogOut,
+	Mail,
+	MapPin,
+	Phone,
+	Save,
+	Upload,
+	User,
+} from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { Toaster, toast } from "sonner"
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/lib/auth";
-import { toast, Toaster } from "sonner";
-import {
-	ArrowLeft,
-	User,
-	Mail,
-	Phone,
-	Calendar,
-	MapPin,
-	Save,
-	Lock,
-	Eye,
-	EyeOff,
-	Camera,
-	Upload,
-	LogOut,
-} from "lucide-react";
-import Link from "next/link";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-	Select,
-	SelectTrigger,
-	SelectContent,
-	SelectItem,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/card"
 import {
 	Dialog,
-	DialogTrigger,
+	DialogClose,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
-	DialogClose,
-} from "@/components/ui/dialog";
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
-	getProfile,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/lib/auth"
+import {
 	getAddress,
-	getSchoolAttended,
-	getParents,
-	getEmergencyContact,
-	getDocuments,
 	getApplication,
-} from "@/lib/student_info";
+	getDocuments,
+	getEmergencyContact,
+	getParents,
+	getProfile,
+	getSchoolAttended,
+} from "@/lib/student_info"
 
 export default function ProfilePage() {
-	const { user, userRole, updateUser, updatePassword, logout } = useAuth();
-	const router = useRouter();
-	const [loading, setLoading] = useState(false);
-	const [passwordLoading, setPasswordLoading] = useState(false);
-	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-	const [showNewPassword, setShowNewPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [profile, setProfile] = useState();
-	const [address, setAddress] = useState();
-	const [schoolAttended, setSchoolAttended] = useState();
-	const [parents, setParents] = useState();
-	const [emergencyContact, setEmergencyContact] = useState();
-	const [application, setApplication] = useState();
-	const [documents, setDocuments] = useState();
+	const { user, userRole, updateUser, updatePassword, logout } = useAuth()
+	const router = useRouter()
+	const [loading, setLoading] = useState(false)
+	const [passwordLoading, setPasswordLoading] = useState(false)
+	const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+	const [showNewPassword, setShowNewPassword] = useState(false)
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+	const [profile, setProfile] = useState()
+	const [address, setAddress] = useState()
+	const [schoolAttended, setSchoolAttended] = useState()
+	const [parents, setParents] = useState()
+	const [emergencyContact, setEmergencyContact] = useState()
+	const [application, setApplication] = useState()
+	const [documents, setDocuments] = useState()
 	const [formData, setFormData] = useState({
 		// Basic
 		first_name: "",
@@ -115,84 +114,84 @@ export default function ProfilePage() {
 		emergency_relationship: "",
 		emergency_address: "",
 		emergency_phone: "",
-	});
+	})
 	const [passwordData, setPasswordData] = useState({
 		currentPassword: "",
 		newPassword: "",
 		confirmPassword: "",
-	});
-	const [profilePhoto, setProfilePhoto] = useState(null);
-	const [photoFile, setPhotoFile] = useState(null);
-	const [photoPreview, setPhotoPreview] = useState(null);
+	})
+	const [profilePhoto, setProfilePhoto] = useState(null)
+	const [photoFile, setPhotoFile] = useState(null)
+	const [photoPreview, setPhotoPreview] = useState(null)
 
 	const profileData = async () => {
-		const data = await getProfile(user.id);
-		setProfile(data);
-	};
+		const data = await getProfile(user.id)
+		setProfile(data)
+	}
 
 	const addressData = async () => {
-		const data = await getAddress(user.id);
-		setAddress(data);
-	};
+		const data = await getAddress(user.id)
+		setAddress(data)
+	}
 
 	const schoolAttendedData = async () => {
-		const data = await getSchoolAttended(user.id);
-		setSchoolAttended(data);
-	};
+		const data = await getSchoolAttended(user.id)
+		setSchoolAttended(data)
+	}
 
 	const parentsData = async () => {
-		const data = await getParents(user.id);
-		setParents(data);
-	};
+		const data = await getParents(user.id)
+		setParents(data)
+	}
 
 	const emergencyContactData = async () => {
-		const data = await getEmergencyContact(user.id);
-		setEmergencyContact(data);
-	};
+		const data = await getEmergencyContact(user.id)
+		setEmergencyContact(data)
+	}
 
 	const documentData = async () => {
-		const data = await getDocuments(user.id);
-		setDocuments(data);
-	};
+		const data = await getDocuments(user.id)
+		setDocuments(data)
+	}
 
 	const documentUploadedMap = useMemo(() => {
-		let count = 0;
+		let count = 0
 		if (documents?.birth_certificate) {
-			count++;
+			count++
 		}
 		if (documents?.good_moral) {
-			count++;
+			count++
 		}
 		if (documents?.grade_card) {
-			count++;
+			count++
 		}
 
-		return count;
-	}, [documents]);
+		return count
+	}, [documents])
 
 	const documentUploaded = () => {
-		return documentUploadedMap;
-	};
+		return documentUploadedMap
+	}
 
 	const applicationData = async () => {
-		const data = await getApplication(user.id);
-		setApplication(data);
-	};
+		const data = await getApplication(user.id)
+		setApplication(data)
+	}
 
 	useEffect(() => {
-		if (!user || !user.id) return; // Wait until user and user.id are available
+		if (!user || !user.id) return // Wait until user and user.id are available
 
-		profileData();
-		addressData();
-		schoolAttendedData();
-		parentsData();
-		emergencyContactData();
-		documentData();
-		applicationData();
-	}, [user]);
+		profileData()
+		addressData()
+		schoolAttendedData()
+		parentsData()
+		emergencyContactData()
+		documentData()
+		applicationData()
+	}, [user])
 
 	useEffect(() => {
-		if (!profile || !address) return;
+		if (!profile || !address) return
 
 		setFormData((prev) => ({
 			...prev,
@@ -235,135 +234,141 @@ export default function ProfilePage() {
 			emergency_relationship: emergencyContact?.relationship || "",
 			emergency_address: emergencyContact?.home_address || "",
 			emergency_phone: emergencyContact?.phone || "",
-		}));
-		setProfilePhoto(profile?.photo_url || null);
-		setPhotoPreview(profile?.photo_url || null);
-	}, [profile, address, schoolAttended, parents, emergencyContact]);
+		}))
+		setProfilePhoto(profile?.photo_url || null)
+		setPhotoPreview(profile?.photo_url || null)
+	}, [profile, address, schoolAttended, parents, emergencyContact])
 
 	const handleInputChange = (e) => {
-		const { name, value } = e.target;
+		const { name, value } = e.target
 		setFormData((prev) => ({
 			...prev,
 			[name]: value,
-		}));
-	};
+		}))
+	}
 
 	const handlePasswordChange = (e) => {
-		const { name, value } = e.target;
+		const { name, value } = e.target
 		setPasswordData((prev) => ({
 			...prev,
 			[name]: value,
-		}));
-	};
+		}))
+	}
 
 	const handlePhotoChange = (e) => {
-		const file = e.target.files?.[0];
+		const file = e.target.files?.[0]
 		if (file) {
 			if (!file.type.startsWith("image/")) {
 				toast("Please select an image file (JPG, PNG, GIF, etc.)", {
 					type: "error",
-				});
-				return;
+				})
+				return
 			}
 
 			if (file.size > 5 * 1024 * 1024) {
-				toast("Please select an image smaller than 5MB", { type: "error" });
-				return;
+				toast("Please select an image smaller than 5MB", { type: "error" })
+				return
 			}
 
-			setPhotoFile(file);
+			setPhotoFile(file)
 
-			const reader = new FileReader();
+			const reader = new FileReader()
 			reader.onload = (e) => {
-				setPhotoPreview(e.target?.result);
-			};
-			reader.readAsDataURL(file);
+				setPhotoPreview(e.target?.result)
+			}
+			reader.readAsDataURL(file)
 		}
-	};
+	}
 
 	const handleLogout = async () => {
-		const result = await logout();
+		const result = await logout()
 		if (result.success) {
-			router.push("/");
+			router.push("/")
 		}
-	};
+	}
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();
-		setLoading(true);
+		e.preventDefault()
+		setLoading(true)
 
 		try {
 			const result = await updateUser({
 				...formData,
 				photoFile: photoFile || "",
-			});
+			})
 
 			if (result.success) {
-				toast.success("Your profile has been successfully updated.");
-				setPhotoFile(null);
+				toast.success("Your profile has been successfully updated.")
+				setPhotoFile(null)
 			} else {
 				toast(result.error || "Failed to update profile. Please try again.", {
 					type: "error",
-				});
+				})
 			}
 		} catch (error) {
-			toast("An unexpected error occurred. Please try again.", {
-				type: "error",
-			});
+			toast(
+				error.message || "An unexpected error occurred. Please try again.",
+				{
+					type: "error",
+				},
+			)
 		} finally {
-			setLoading(false);
+			setLoading(false)
 		}
-	};
+	}
 
 	const handlePasswordSubmit = async (e) => {
-		e.preventDefault();
-		setPasswordLoading(true);
+		e.preventDefault()
+		setPasswordLoading(true)
 
 		if (passwordData.newPassword !== passwordData.confirmPassword) {
-			toast("New password and confirmation do not match.", { type: "error" });
-			setPasswordLoading(false);
-			return;
+			toast("New password and confirmation do not match.", { type: "error" })
+			setPasswordLoading(false)
+			return
 		}
 
 		// Require: min 8 chars, at least 1 lowercase, 1 uppercase, 1 number, and 1 special char
-		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/
 		if (!passwordRegex.test(passwordData.newPassword)) {
 			toast(
 				"Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
 				{ type: "error" },
-			);
-			setPasswordLoading(false);
-			return;
+			)
+			setPasswordLoading(false)
+			return
 		}
 
 		try {
 			const result = await updatePassword(
 				passwordData.currentPassword,
 				passwordData.newPassword,
-			);
+			)
 
 			if (result.success) {
 				toast(result.message || "User password updated successfully!", {
 					type: "success",
-				});
+				})
 				setPasswordData({
 					currentPassword: "",
 					newPassword: "",
 					confirmPassword: "",
-				});
+				})
 			} else {
 				toast(result.error || "Failed to update password. Please try again.", {
 					type: "error",
-				});
+				})
 			}
 		} catch (error) {
-			toast("An unexpected error occurred. Please try again.", {
-				type: "error",
-			});
+			toast(
+				error.message || "An unexpected error occurred. Please try again.",
+				{
+					type: "error",
+				},
+			)
 		} finally {
-			setPasswordLoading(false);
+			setPasswordLoading(false)
 		}
-	};
+	}
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -380,7 +385,7 @@ export default function ProfilePage() {
 					</div>
 					<div className="flex items-center space-x-4">
 						<span className="text-sm text-muted-foreground">
-							{user && user.email} ({userRole})
+							{user?.email} ({userRole})
 						</span>
 						<Dialog>
 							<DialogTrigger asChild>
@@ -1347,5 +1352,5 @@ export default function ProfilePage() {
 				</div>
 			</main>
 		</div>
-	);
+	)
 }
