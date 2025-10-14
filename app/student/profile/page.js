@@ -16,9 +16,10 @@ import {
 	Upload,
 	User,
 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useId, useMemo, useState } from "react"
 import { Toaster, toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -123,6 +124,46 @@ export default function ProfilePage() {
 	const [profilePhoto, setProfilePhoto] = useState(null)
 	const [photoFile, setPhotoFile] = useState(null)
 	const [photoPreview, setPhotoPreview] = useState(null)
+	const photouploadId = useId()
+	const firstNameId = useId()
+	const middleNameId = useId()
+	const surnameId = useId()
+	const extensionNameId = useId()
+	const emailId = useId()
+	const phoneId = useId()
+	const dateOfBirthId = useId()
+	const place_of_birth_id = useId()
+	const religionId = useId()
+	const citizenshipId = useId()
+	const barangayId = useId()
+	const municipalityId = useId()
+	const provinceId = useId()
+
+	const elementary_school_id = useId()
+	const elementary_school_address_id = useId()
+	const elementary_year_graduated_id = useId()
+	const junior_high_school_id = useId()
+	const junior_high_school_address_id = useId()
+	const junior_high_year_graduated_id = useId()
+	const senior_high_school_id = useId()
+	const senior_high_school_address_id = useId()
+	const senior_high_year_graduated_id = useId()
+
+	const father_name_id = useId()
+	const father_occupation_id = useId()
+	const father_education_id = useId()
+	const mother_name_id = useId()
+	const mother_occupation_id = useId()
+	const mother_education_id = useId()
+	const monthly_income_id = useId()
+	const emergency_name_id = useId()
+	const emergency_relationship_id = useId()
+	const emergency_address_id = useId()
+	const emergency_phone_id = useId()
+
+	const currentPasswordId = useId()
+	const newPasswordId = useId()
+	const confirmPasswordId = useId()
 
 	const profileData = async () => {
 		const data = await getProfile(user.id)
@@ -191,8 +232,6 @@ export default function ProfilePage() {
 	}, [user])
 
 	useEffect(() => {
-		if (!profile || !address) return
-
 		setFormData((prev) => ({
 			...prev,
 			first_name: profile?.first_name || "",
@@ -237,7 +276,7 @@ export default function ProfilePage() {
 		}))
 		setProfilePhoto(profile?.photo_url || null)
 		setPhotoPreview(profile?.photo_url || null)
-	}, [profile, address, schoolAttended, parents, emergencyContact])
+	}, [user, profile, address, schoolAttended, parents, emergencyContact])
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target
@@ -467,10 +506,12 @@ export default function ProfilePage() {
 													<div className="flex items-center gap-4">
 														<div className="relative">
 															{photoPreview ? (
-																<img
+																<Image
 																	src={photoPreview || "/placeholder.svg"}
 																	alt="Profile preview"
 																	className="w-20 h-20 rounded-full object-cover border-2 border-border"
+																	width={200}
+																	height={200}
 																/>
 															) : (
 																<div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center border-2 border-border">
@@ -480,7 +521,7 @@ export default function ProfilePage() {
 														</div>
 														<div className="space-y-2">
 															<Label
-																htmlFor="photo-upload"
+																htmlFor={photouploadId}
 																className="cursor-pointer"
 															>
 																<div className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
@@ -489,7 +530,7 @@ export default function ProfilePage() {
 																</div>
 															</Label>
 															<Input
-																id="photo-upload"
+																id={photouploadId}
 																type="file"
 																accept="image/*"
 																onChange={handlePhotoChange}
@@ -504,9 +545,9 @@ export default function ProfilePage() {
 
 												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 													<div className="space-y-2">
-														<Label htmlFor="first_name">First Name</Label>
+														<Label htmlFor={firstNameId}>First Name</Label>
 														<Input
-															id="first_name"
+															id={firstNameId}
 															name="first_name"
 															value={formData.first_name}
 															onChange={handleInputChange}
@@ -515,9 +556,9 @@ export default function ProfilePage() {
 														/>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="middle_name">Middle Name</Label>
+														<Label htmlFor={middleNameId}>Middle Name</Label>
 														<Input
-															id="middle_name"
+															id={middleNameId}
 															name="middle_name"
 															value={formData.middle_name}
 															onChange={handleInputChange}
@@ -526,9 +567,9 @@ export default function ProfilePage() {
 														/>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="surname">Surname</Label>
+														<Label htmlFor={surnameId}>Surname</Label>
 														<Input
-															id="surname"
+															id={surnameId}
 															name="surname"
 															value={formData.surname}
 															onChange={handleInputChange}
@@ -537,11 +578,11 @@ export default function ProfilePage() {
 														/>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="extension_name">
+														<Label htmlFor={extensionNameId}>
 															Extension Name
 														</Label>
 														<Input
-															id="extension_name"
+															id={extensionNameId}
 															name="extension_name"
 															value={formData.extension_name}
 															onChange={handleInputChange}
@@ -550,11 +591,11 @@ export default function ProfilePage() {
 														/>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="email">Email Address</Label>
+														<Label htmlFor={emailId}>Email Address</Label>
 														<div className="relative">
 															<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 															<Input
-																id="email"
+																id={emailId}
 																name="email"
 																type="email"
 																value={formData.email}
@@ -566,11 +607,11 @@ export default function ProfilePage() {
 														</div>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="phone">Phone Number</Label>
+														<Label htmlFor={phoneId}>Phone Number</Label>
 														<div className="relative">
 															<Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 															<Input
-																id="phone"
+																id={phoneId}
 																name="phone"
 																type="tel"
 																value={formData.phone}
@@ -584,11 +625,11 @@ export default function ProfilePage() {
 
 												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 													<div className="space-y-2">
-														<Label htmlFor="dateOfBirth">Date of Birth</Label>
+														<Label htmlFor={dateOfBirthId}>Date of Birth</Label>
 														<div className="relative">
 															<Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 															<Input
-																id="dateOfBirth"
+																id={dateOfBirthId}
 																name="dateOfBirth"
 																type="date"
 																value={formData.dateOfBirth}
@@ -598,11 +639,11 @@ export default function ProfilePage() {
 														</div>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="place_of_birth">
+														<Label htmlFor={place_of_birth_id}>
 															Place of Birth
 														</Label>
 														<Input
-															id="place_of_birth"
+															id={place_of_birth_id}
 															name="place_of_birth"
 															value={formData.place_of_birth}
 															onChange={handleInputChange}
@@ -610,9 +651,9 @@ export default function ProfilePage() {
 														/>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="religion">Religion</Label>
+														<Label htmlFor={religionId}>Religion</Label>
 														<Input
-															id="religion"
+															id={religionId}
 															name="religion"
 															value={formData.religion}
 															onChange={handleInputChange}
@@ -620,9 +661,9 @@ export default function ProfilePage() {
 														/>
 													</div>
 													<div className="space-y-2">
-														<Label htmlFor="citizenship">Citizenship</Label>
+														<Label htmlFor={citizenshipId}>Citizenship</Label>
 														<Input
-															id="citizenship"
+															id={citizenshipId}
 															name="citizenship"
 															value={formData.citizenship}
 															onChange={handleInputChange}
@@ -682,27 +723,29 @@ export default function ProfilePage() {
 													</div>
 													<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
 														<div className="space-y-2">
-															<Label htmlFor="barangay">Barangay</Label>
+															<Label htmlFor={barangayId}>Barangay</Label>
 															<Input
-																id="barangay"
+																id={barangayId}
 																name="barangay"
 																value={formData.barangay}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="municipality">Municipality</Label>
+															<Label htmlFor={municipalityId}>
+																Municipality
+															</Label>
 															<Input
-																id="municipality"
+																id={municipalityId}
 																name="municipality"
 																value={formData.municipality}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="province">Province</Label>
+															<Label htmlFor={provinceId}>Province</Label>
 															<Input
-																id="province"
+																id={provinceId}
 																name="province"
 																value={formData.province}
 																onChange={handleInputChange}
@@ -794,33 +837,33 @@ export default function ProfilePage() {
 														</div>
 														<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 															<div className="space-y-2">
-																<Label htmlFor="elementary_school">
+																<Label htmlFor={elementary_school_id}>
 																	School Name
 																</Label>
 																<Input
-																	id="elementary_school"
+																	id={elementary_school_id}
 																	name="elementary_school"
 																	value={formData.elementary_school}
 																	onChange={handleInputChange}
 																/>
 															</div>
 															<div className="space-y-2">
-																<Label htmlFor="elementary_school_address">
+																<Label htmlFor={elementary_school_address_id}>
 																	School Address
 																</Label>
 																<Input
-																	id="elementary_school_address"
+																	id={elementary_school_address_id}
 																	name="elementary_school_address"
 																	value={formData.elementary_school_address}
 																	onChange={handleInputChange}
 																/>
 															</div>
 															<div className="space-y-2">
-																<Label htmlFor="elementary_year_graduated">
+																<Label htmlFor={elementary_year_graduated_id}>
 																	Year Graduated
 																</Label>
 																<Input
-																	id="elementary_year_graduated"
+																	id={elementary_year_graduated_id}
 																	name="elementary_year_graduated"
 																	value={formData.elementary_year_graduated}
 																	onChange={handleInputChange}
@@ -838,33 +881,33 @@ export default function ProfilePage() {
 														</div>
 														<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 															<div className="space-y-2">
-																<Label htmlFor="junior_high_school">
+																<Label htmlFor={junior_high_school_id}>
 																	School Name
 																</Label>
 																<Input
-																	id="junior_high_school"
+																	id={junior_high_school_id}
 																	name="junior_high_school"
 																	value={formData.junior_high_school}
 																	onChange={handleInputChange}
 																/>
 															</div>
 															<div className="space-y-2">
-																<Label htmlFor="junior_high_school_address">
+																<Label htmlFor={junior_high_school_address_id}>
 																	School Address
 																</Label>
 																<Input
-																	id="junior_high_school_address"
+																	id={junior_high_school_address_id}
 																	name="junior_high_school_address"
 																	value={formData.junior_high_school_address}
 																	onChange={handleInputChange}
 																/>
 															</div>
 															<div className="space-y-2">
-																<Label htmlFor="junior_high_year_graduated">
+																<Label htmlFor={junior_high_year_graduated_id}>
 																	Year Graduated
 																</Label>
 																<Input
-																	id="junior_high_year_graduated"
+																	id={junior_high_year_graduated_id}
 																	name="junior_high_year_graduated"
 																	value={formData.junior_high_year_graduated}
 																	onChange={handleInputChange}
@@ -882,33 +925,33 @@ export default function ProfilePage() {
 														</div>
 														<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
 															<div className="space-y-2">
-																<Label htmlFor="senior_high_school">
+																<Label htmlFor={senior_high_school_id}>
 																	School Name
 																</Label>
 																<Input
-																	id="senior_high_school"
+																	id={senior_high_school_id}
 																	name="senior_high_school"
 																	value={formData.senior_high_school}
 																	onChange={handleInputChange}
 																/>
 															</div>
 															<div className="space-y-2">
-																<Label htmlFor="senior_high_school_address">
+																<Label htmlFor={senior_high_school_address_id}>
 																	School Address
 																</Label>
 																<Input
-																	id="senior_high_school_address"
+																	id={senior_high_school_address_id}
 																	name="senior_high_school_address"
 																	value={formData.senior_high_school_address}
 																	onChange={handleInputChange}
 																/>
 															</div>
 															<div className="space-y-2">
-																<Label htmlFor="senior_high_year_graduated">
+																<Label htmlFor={senior_high_year_graduated_id}>
 																	Year Graduated
 																</Label>
 																<Input
-																	id="senior_high_year_graduated"
+																	id={senior_high_year_graduated_id}
 																	name="senior_high_year_graduated"
 																	value={formData.senior_high_year_graduated}
 																	onChange={handleInputChange}
@@ -929,77 +972,77 @@ export default function ProfilePage() {
 													</div>
 													<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
 														<div className="space-y-2">
-															<Label htmlFor="father_name">
+															<Label htmlFor={father_name_id}>
 																Father&apos;s Name
 															</Label>
 															<Input
-																id="father_name"
+																id={father_name_id}
 																name="father_name"
 																value={formData.father_name}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="father_occupation">
+															<Label htmlFor={father_occupation_id}>
 																Father&apos;s Occupation
 															</Label>
 															<Input
-																id="father_occupation"
+																id={father_occupation_id}
 																name="father_occupation"
 																value={formData.father_occupation}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="father_education">
+															<Label htmlFor={father_education_id}>
 																Father&apos;s Educational Attainment
 															</Label>
 															<Input
-																id="father_education"
+																id={father_education_id}
 																name="father_education"
 																value={formData.father_education}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="mother_name">
+															<Label htmlFor={mother_name_id}>
 																Mother&apos;s Name
 															</Label>
 															<Input
-																id="mother_name"
+																id={mother_name_id}
 																name="mother_name"
 																value={formData.mother_name}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="mother_occupation">
+															<Label htmlFor={mother_occupation_id}>
 																Mother&apos;s Occupation
 															</Label>
 															<Input
-																id="mother_occupation"
+																id={mother_occupation_id}
 																name="mother_occupation"
 																value={formData.mother_occupation}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="mother_education">
+															<Label htmlFor={mother_education_id}>
 																Mother&apos;s Educational Attainment
 															</Label>
 															<Input
-																id="mother_education"
+																id={mother_education_id}
 																name="mother_education"
 																value={formData.mother_education}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2 md:col-span-3">
-															<Label htmlFor="monthly_income">
+															<Label htmlFor={monthly_income_id}>
 																Monthly Income
 															</Label>
 															<Input
-																id="monthly_income"
+																id={monthly_income_id}
 																name="monthly_income"
 																value={formData.monthly_income}
 																onChange={handleInputChange}
@@ -1015,40 +1058,40 @@ export default function ProfilePage() {
 													</div>
 													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
 														<div className="space-y-2">
-															<Label htmlFor="emergency_name">Name</Label>
+															<Label htmlFor={emergency_name_id}>Name</Label>
 															<Input
-																id="emergency_name"
+																id={emergency_name_id}
 																name="emergency_name"
 																value={formData.emergency_name}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="emergency_relationship">
+															<Label htmlFor={emergency_relationship_id}>
 																Relationship
 															</Label>
 															<Input
-																id="emergency_relationship"
+																id={emergency_relationship_id}
 																name="emergency_relationship"
 																value={formData.emergency_relationship}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2 md:col-span-2">
-															<Label htmlFor="emergency_address">
+															<Label htmlFor={emergency_address_id}>
 																Home Address
 															</Label>
 															<Input
-																id="emergency_address"
+																id={emergency_address_id}
 																name="emergency_address"
 																value={formData.emergency_address}
 																onChange={handleInputChange}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label htmlFor="emergency_phone">Phone</Label>
+															<Label htmlFor={emergency_phone_id}>Phone</Label>
 															<Input
-																id="emergency_phone"
+																id={emergency_phone_id}
 																name="emergency_phone"
 																value={formData.emergency_phone}
 																onChange={handleInputChange}
@@ -1103,13 +1146,13 @@ export default function ProfilePage() {
 												className="space-y-6"
 											>
 												<div className="space-y-2">
-													<Label htmlFor="currentPassword">
+													<Label htmlFor={currentPasswordId}>
 														Current Password
 													</Label>
 													<div className="relative">
 														<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 														<Input
-															id="currentPassword"
+															id={currentPasswordId}
 															name="currentPassword"
 															type={showCurrentPassword ? "text" : "password"}
 															value={passwordData.currentPassword}
@@ -1137,11 +1180,11 @@ export default function ProfilePage() {
 												</div>
 
 												<div className="space-y-2">
-													<Label htmlFor="newPassword">New Password</Label>
+													<Label htmlFor={newPasswordId}>New Password</Label>
 													<div className="relative">
 														<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 														<Input
-															id="newPassword"
+															id={newPasswordId}
 															name="newPassword"
 															type={showNewPassword ? "text" : "password"}
 															value={passwordData.newPassword}
@@ -1172,13 +1215,13 @@ export default function ProfilePage() {
 												</div>
 
 												<div className="space-y-2">
-													<Label htmlFor="confirmPassword">
+													<Label htmlFor={confirmPasswordId}>
 														Confirm New Password
 													</Label>
 													<div className="relative">
 														<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 														<Input
-															id="confirmPassword"
+															id={confirmPasswordId}
 															name="confirmPassword"
 															type={showConfirmPassword ? "text" : "password"}
 															value={passwordData.confirmPassword}

@@ -1,73 +1,73 @@
-"use client";
+"use client"
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import {
+	AlertCircle,
+	Check,
+	CircleAlert,
+	CircleCheck,
+	CircleDashed,
+	Eye,
+	File,
+	FileText,
+	RectangleEllipsis,
+	Upload,
+	User,
+	X,
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/card"
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "@/components/ui/dialog";
-import { useAuth } from "@/lib/auth";
-import { getDocuments, getProfile } from "@/lib/student_info";
+} from "@/components/ui/dialog"
+import { Progress } from "@/components/ui/progress"
 import {
-	Upload,
-	File,
-	X,
-	Check,
-	AlertCircle,
-	CircleCheck,
-	CircleAlert,
-	RectangleEllipsis,
-	CircleDashed,
-	Eye,
-	Calendar,
-	FileText,
-	User,
-} from "lucide-react";
-import Link from "next/link";
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
+import { useAuth } from "@/lib/auth"
+import { getDocuments, getProfile } from "@/lib/student_info"
 
 export function DocumentUpload({ onUploadComplete }) {
-	const { user, updateDocuments } = useAuth();
-	const fileInputRef = useRef(null);
+	const { user, updateDocuments } = useAuth()
+	const fileInputRef = useRef(null)
 	const [formData, setFormData] = useState({
 		id: "",
 		document: null,
 		type: "",
-	});
-	const [documents, setDocuments] = useState();
-	const [profile, setProfile] = useState();
-	const [uploading, setUploading] = useState(false);
-	const [uploadProgress, setUploadProgress] = useState(0);
-	const [error, setError] = useState("");
-	const [documentSuccess, setDocumentSuccess] = useState(null);
-	const [documentError, setDocumentError] = useState(null);
-	const [dragActive, setDragActive] = useState(false);
-	const [currentFileName, setCurrentFileName] = useState("");
-	const [selectedDocumentType, setSelectedDocumentType] = useState("");
-	const [selectedDocument, setSelectedDocument] = useState(null);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [pendingFile, setPendingFile] = useState(null);
-	const [previewUrl, setPreviewUrl] = useState(null);
-	const [isImagePreview, setIsImagePreview] = useState(false);
+	})
+	const [documents, setDocuments] = useState()
+	const [profile, setProfile] = useState()
+	const [uploading, setUploading] = useState(false)
+	const [uploadProgress, setUploadProgress] = useState(0)
+	const [error, setError] = useState("")
+	const [documentSuccess, setDocumentSuccess] = useState(null)
+	const [documentError, setDocumentError] = useState(null)
+	const [dragActive, setDragActive] = useState(false)
+	const [currentFileName, setCurrentFileName] = useState("")
+	const [selectedDocumentType, setSelectedDocumentType] = useState("")
+	const [selectedDocument, setSelectedDocument] = useState(null)
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [pendingFile, setPendingFile] = useState(null)
+	const [previewUrl, setPreviewUrl] = useState(null)
+	const [isImagePreview, setIsImagePreview] = useState(false)
 
 	const documentTypes = [
 		{
@@ -85,13 +85,13 @@ export function DocumentUpload({ onUploadComplete }) {
 			label: "Grade Card",
 			description: "Official Grade Card",
 		},
-	];
+	]
 
-	const acceptedFileTypes = [".pdf", ".jpg", ".jpeg", ".png"];
-	const maxFileSize = 5 * 1024 * 1024; // 5MB
+	const acceptedFileTypes = [".pdf", ".jpg", ".jpeg", ".png"]
+	const maxFileSize = 5 * 1024 * 1024 // 5MB
 
 	const documentsData = async () => {
-		const data = await getDocuments(user.id);
+		const data = await getDocuments(user.id)
 
 		const dataObject = [
 			{
@@ -109,167 +109,165 @@ export function DocumentUpload({ onUploadComplete }) {
 				name: data.grade_card,
 				status: data.grade_card_status,
 			},
-		];
-		setDocuments(dataObject);
-	};
+		]
+		setDocuments(dataObject)
+	}
 
 	const profileData = async () => {
-		const data = await getProfile(user.id);
-		setProfile(data);
-	};
+		const data = await getProfile(user.id)
+		setProfile(data)
+	}
 
 	useEffect(() => {
-		if (previewUrl) URL.revokeObjectURL(previewUrl);
+		if (previewUrl) URL.revokeObjectURL(previewUrl)
 
-		if (!user) return;
+		if (!user) return
 
-		documentsData();
-		profileData();
-	}, [user, previewUrl]);
+		documentsData()
+		profileData()
+	}, [user, previewUrl])
 
 	const handleDrag = (e) => {
-		e.preventDefault();
-		e.stopPropagation();
+		e.preventDefault()
+		e.stopPropagation()
 		if (e.type === "dragenter" || e.type === "dragover") {
-			setDragActive(true);
+			setDragActive(true)
 		} else if (e.type === "dragleave") {
-			setDragActive(false);
+			setDragActive(false)
 		}
-	};
+	}
 
 	const handleDrop = (e) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setDragActive(false);
+		e.preventDefault()
+		e.stopPropagation()
+		setDragActive(false)
 
-		if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-			handleFiles(e.dataTransfer.files);
-		}
-	};
+		handleFiles(e?.dataTransfer?.files)
+	}
 
 	const handleFileInput = (e) => {
 		if (e.target.files) {
-			handleFiles(e.target.files);
+			handleFiles(e.target.files)
 		}
-	};
+	}
 
 	const validateFile = (file) => {
 		if (file.size > maxFileSize) {
-			return "File size must be less than 5MB";
+			return "File size must be less than 5MB"
 		}
 
-		const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+		const fileExtension = `.${file.name.split(".").pop()?.toLowerCase()}`
 		if (!acceptedFileTypes.includes(fileExtension)) {
-			return "File type not supported. Please upload PDF, JPG, or PNG files";
+			return "File type not supported. Please upload PDF, JPG, or PNG files"
 		}
 
 		if (!selectedDocumentType) {
-			return "Please select a document type before uploading";
+			return "Please select a document type before uploading"
 		}
 
-		return null;
-	};
+		return null
+	}
 
 	const handleFiles = async (files) => {
-		if (!files[0]) return;
+		if (!files[0]) return
 
-		const validationError = validateFile(files[0]);
+		const validationError = validateFile(files[0])
 		if (validationError) {
-			setError(validationError);
-			return;
+			setError(validationError)
+			return
 		}
 
-		setError("");
+		setError("")
 		// hold the file for explicit submit by user
-		setPendingFile(files[0]);
-		setCurrentFileName(files[0].name);
+		setPendingFile(files[0])
+		setCurrentFileName(files[0].name)
 
-		if (!user) return;
+		if (!user) return
 		setFormData({
 			id: user.id,
 			document: files[0],
 			type: selectedDocumentType,
-		});
+		})
 
-		const objectUrl = URL.createObjectURL(files[0]);
-		setPreviewUrl(objectUrl);
-		setIsImagePreview(files[0].type?.startsWith("image/"));
-	};
+		const objectUrl = URL.createObjectURL(files[0])
+		setPreviewUrl(objectUrl)
+		setIsImagePreview(files[0].type?.startsWith("image/"))
+	}
 
 	const submitFile = async () => {
-		if (!pendingFile) return;
+		if (!pendingFile) return
 
-		setUploading(true);
-		setUploadProgress(0);
+		setUploading(true)
+		setUploadProgress(0)
 
 		try {
 			const uploadInterval = setInterval(() => {
 				setUploadProgress((prev) => {
 					if (prev >= 90) {
-						clearInterval(uploadInterval);
-						return 90;
+						clearInterval(uploadInterval)
+						return 90
 					}
-					return prev + 10;
-				});
-			}, 200);
+					return prev + 10
+				})
+			}, 200)
 
-			await new Promise((resolve) => setTimeout(resolve, 2000));
+			await new Promise((resolve) => setTimeout(resolve, 2000))
 
 			const result = await updateDocuments({
 				...formData,
-			});
+			})
 
-			setUploadProgress(100);
+			setUploadProgress(100)
 
 			if (result.success) {
-				setDocumentSuccess(result.message || "Document update successful");
+				setDocumentSuccess(result.message || "Document update successful")
 			} else {
-				setDocumentError(result.error || "Document update failed");
+				setDocumentError(result.error || "Document update failed")
 			}
 
 			setTimeout(() => {
-				setUploading(false);
-				setUploadProgress(0);
-				setCurrentFileName("");
-				setSelectedDocumentType("");
-				setPendingFile(null);
+				setUploading(false)
+				setUploadProgress(0)
+				setCurrentFileName("")
+				setSelectedDocumentType("")
+				setPendingFile(null)
 				if (previewUrl) {
-					URL.revokeObjectURL(previewUrl);
-					setPreviewUrl(null);
-					setIsImagePreview(false);
+					URL.revokeObjectURL(previewUrl)
+					setPreviewUrl(null)
+					setIsImagePreview(false)
 				}
-				onUploadComplete?.();
-			}, 500);
+				onUploadComplete?.()
+			}, 500)
 		} catch (err) {
-			setError("Upload failed. Please try again.");
-			setUploading(false);
-			setUploadProgress(0);
-			setCurrentFileName("");
+			setError(err.message || "Upload failed. Please try again.")
+			setUploading(false)
+			setUploadProgress(0)
+			setCurrentFileName("")
 		}
-	};
+	}
 
 	const removeSelectedFile = () => {
 		if (previewUrl) {
-			URL.revokeObjectURL(previewUrl);
-			setPreviewUrl(null);
+			URL.revokeObjectURL(previewUrl)
+			setPreviewUrl(null)
 		}
-		setPendingFile(null);
-		setCurrentFileName("");
-	};
+		setPendingFile(null)
+		setCurrentFileName("")
+	}
 
 	// memoize status mapping so derived status values are recomputed only when `documents` changes
 	const documentStatusMap = useMemo(() => {
-		if (!documents) return {};
+		if (!documents) return {}
 		return {
 			birth_certificate: documents[0].status ?? 0,
 			good_moral: documents[1].status ?? 0,
 			grade_card: documents[2].status ?? 0,
-		};
-	}, [documents]);
+		}
+	}, [documents])
 
 	const getDocumentStatus = (docType) => {
-		return documentStatusMap[docType] ?? 0;
-	};
+		return documentStatusMap[docType] ?? 0
+	}
 
 	const statusIconMap = useMemo(() => {
 		return {
@@ -279,12 +277,12 @@ export function DocumentUpload({ onUploadComplete }) {
 			4: <X className="h-4 w-4 text-red-500" />,
 			5: <AlertCircle className="h-4 w-4 text-yellow-500" />,
 			default: <Upload className="h-4 w-4 text-gray-400" />,
-		};
-	}, []);
+		}
+	}, [])
 
 	const getStatusIcon = (status) => {
-		return statusIconMap[status] ?? statusIconMap.default;
-	};
+		return statusIconMap[status] ?? statusIconMap.default
+	}
 
 	// memoized mapping of status -> badge to avoid recreating elements on each render
 	const statusBadgeMap = useMemo(() => {
@@ -295,41 +293,41 @@ export function DocumentUpload({ onUploadComplete }) {
 			4: <Badge className="bg-red-500 text-white">Rejected</Badge>,
 			5: <Badge className="bg-yellow-500">Incomplete</Badge>,
 			default: <Badge variant="secondary">Not Uploaded</Badge>,
-		};
-	}, []);
+		}
+	}, [])
 
 	const getStatusBadge = (status) => {
-		return statusBadgeMap[status] ?? statusBadgeMap.default;
-	};
+		return statusBadgeMap[status] ?? statusBadgeMap.default
+	}
 
 	const getDocumentTypeLabel = (type) => {
-		const docType = documentTypes.find((dt) => dt.value === type);
-		return docType ? docType.label : type;
-	};
+		const docType = documentTypes.find((dt) => dt.value === type)
+		return docType ? docType.label : type
+	}
 
 	const getDocumentTypeDescription = (type) => {
-		const docType = documentTypes.find((dt) => dt.value === type);
-		return docType ? docType.description : "Document";
-	};
+		const docType = documentTypes.find((dt) => dt.value === type)
+		return docType ? docType.description : "Document"
+	}
 
 	const getStatusColor = (status) => {
 		switch (status) {
 			case "approved":
-				return "text-green-600";
+				return "text-green-600"
 			case "rejected":
-				return "text-red-600";
+				return "text-red-600"
 			case "pending":
-				return "text-yellow-600";
+				return "text-yellow-600"
 			default:
-				return "text-gray-600";
+				return "text-gray-600"
 		}
-	};
+	}
 
 	const handleViewDocument = (doc) => {
-		const docSelected = documents.find((d) => d.type === doc.value);
-		setSelectedDocument(docSelected);
-		setIsModalOpen(true);
-	};
+		const docSelected = documents.find((d) => d.type === doc.value)
+		setSelectedDocument(docSelected)
+		setIsModalOpen(true)
+	}
 
 	return (
 		<div className="space-y-6">
@@ -352,9 +350,9 @@ export function DocumentUpload({ onUploadComplete }) {
 					)}
 
 					<div className="mb-6">
-						<label className="text-sm font-medium mb-2 block">
+						<span className="text-sm font-medium mb-2 block">
 							Document Type
-						</label>
+						</span>
 						<Select
 							value={selectedDocumentType}
 							onValueChange={setSelectedDocumentType}
@@ -383,11 +381,13 @@ export function DocumentUpload({ onUploadComplete }) {
 								? "border-primary bg-primary/5"
 								: "border-muted-foreground/25"
 						} ${uploading ? "pointer-events-none opacity-50" : "cursor-pointer hover:border-primary/50"}`}
+						role="document"
 						onDragEnter={handleDrag}
 						onDragLeave={handleDrag}
 						onDragOver={handleDrag}
 						onDrop={handleDrop}
 						onClick={() => !uploading && fileInputRef.current?.click()}
+						onKeyPress={() => !uploading && fileInputRef.current?.click()}
 					>
 						<input
 							ref={fileInputRef}
@@ -442,10 +442,12 @@ export function DocumentUpload({ onUploadComplete }) {
 									<div className="mt-4 flex flex-col items-center gap-3">
 										<div className="flex items-center gap-3">
 											{isImagePreview ? (
-												<img
+												<Image
 													src={previewUrl}
 													alt={currentFileName}
 													className="h-20 w-20 object-contain rounded"
+													width={200}
+													height={200}
 												/>
 											) : (
 												<div className="flex items-center gap-2">
@@ -462,8 +464,8 @@ export function DocumentUpload({ onUploadComplete }) {
 										<div className="flex gap-2 mt-5">
 											<Button
 												onClick={(e) => {
-													e.stopPropagation();
-													submitFile();
+													e.stopPropagation()
+													submitFile()
 												}}
 												disabled={!pendingFile || uploading}
 											>
@@ -472,8 +474,8 @@ export function DocumentUpload({ onUploadComplete }) {
 											<Button
 												variant="outline"
 												onClick={(e) => {
-													e.stopPropagation();
-													removeSelectedFile();
+													e.stopPropagation()
+													removeSelectedFile()
 												}}
 												disabled={uploading}
 											>
@@ -513,7 +515,7 @@ export function DocumentUpload({ onUploadComplete }) {
 				<CardContent>
 					<div className="space-y-4">
 						{documentTypes.map((doc) => {
-							const status = getDocumentStatus(doc.value);
+							const status = getDocumentStatus(doc.value)
 							return (
 								<div
 									key={doc.value}
@@ -540,7 +542,7 @@ export function DocumentUpload({ onUploadComplete }) {
 										</Button>
 									</div>
 								</div>
-							);
+							)
 						})}
 					</div>
 				</CardContent>
@@ -637,18 +639,18 @@ export function DocumentUpload({ onUploadComplete }) {
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="space-y-4">
 									<div>
-										<label className="text-sm font-medium text-muted-foreground">
+										<span className="text-sm font-medium text-muted-foreground">
 											Document Type
-										</label>
+										</span>
 										<p className="text-base font-semibold">
 											{getDocumentTypeLabel(selectedDocument.type)}
 										</p>
 									</div>
 
 									<div>
-										<label className="text-sm font-medium text-muted-foreground">
+										<span className="text-sm font-medium text-muted-foreground">
 											File Name
-										</label>
+										</span>
 										<p
 											className="text-base max-w-xs truncate"
 											title={selectedDocument.name}
@@ -775,5 +777,5 @@ export function DocumentUpload({ onUploadComplete }) {
 				</DialogContent>
 			</Dialog>
 		</div>
-	);
+	)
 }
