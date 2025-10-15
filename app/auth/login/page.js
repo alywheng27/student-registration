@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { LoginForm } from "@/components/auth/login-form";
-import { Button } from "@/components/ui/button";
+import Link from "next/link"
+import { LoginForm } from "@/components/auth/login-form"
+import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
 	return (
@@ -22,5 +22,5 @@ export default function LoginPage() {
 				<LoginForm />
 			</div>
 		</div>
-	);
+	)
 }

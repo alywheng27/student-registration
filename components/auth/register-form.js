@@ -1,36 +1,34 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+	CircleAlert,
+	CircleCheck,
+	Eye,
+	EyeOff,
+	Upload,
+	User,
+} from "lucide-react"
+import Image from "next/image"
+import { useId, useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/lib/auth";
-import {
-	Eye,
-	EyeOff,
-	Upload,
-	User,
-	CircleCheck,
-	CircleAlert,
-} from "lucide-react";
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
 	Select,
-	SelectTrigger,
 	SelectContent,
 	SelectItem,
+	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
+import { useAuth } from "@/lib/auth"
 
 export function RegisterForm() {
 	const [formData, setFormData] = useState({
@@ -77,54 +75,53 @@ export function RegisterForm() {
 		birth_certificate: null,
 		good_moral: null,
 		grade_card: null,
-	});
-	const [error, setError] = useState("");
-	const [profilePhotoError, setProfilePhotoError] = useState("");
-	const [success, setSuccess] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [showPassword, setShowPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [profilePhotoFile, setProfilePhotoFile] = useState(null);
-	const [profilePhotoPreview, setProfilePhotoPreview] = useState("");
+	})
+	const [error, setError] = useState("")
+	const [profilePhotoError, setProfilePhotoError] = useState("")
+	const [success, setSuccess] = useState("")
+	const [loading, setLoading] = useState(false)
+	const [showPassword, setShowPassword] = useState(false)
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+	const [profilePhotoFile, setProfilePhotoFile] = useState(null)
+	const [profilePhotoPreview, setProfilePhotoPreview] = useState("")
 
-	const { register } = useAuth();
-	const router = useRouter();
+	const { register } = useAuth()
 
 	const handleChange = (e) => {
 		setFormData((prev) => ({
 			...prev,
 			[e.target.name]: e.target.value,
-		}));
-	};
+		}))
+	}
 
 	const handleProfilePhotoChange = (e) => {
-		const file = e.target.files?.[0];
+		const file = e.target.files?.[0]
 		if (file) {
 			// Validate file type
 			if (!file.type.startsWith("image/")) {
-				setError("Please select a valid image file");
-				return;
+				setError("Please select a valid image file")
+				return
 			}
 
 			// Validate file size (max 5MB)
 			if (file.size > 5 * 1024 * 1024) {
-				setError("Profile photo must be less than 5MB");
-				return;
+				setError("Profile photo must be less than 5MB")
+				return
 			}
 
-			setProfilePhotoFile(file);
+			setProfilePhotoFile(file)
 
 			// Create preview URL
-			const reader = new FileReader();
+			const reader = new FileReader()
 			reader.onload = (e) => {
-				const result = e.target?.result;
-				setProfilePhotoPreview(result);
-				setFormData((prev) => ({ ...prev, profilePhoto: file }));
-			};
-			reader.readAsDataURL(file);
-			setError("");
+				const result = e.target?.result
+				setProfilePhotoPreview(result)
+				setFormData((prev) => ({ ...prev, profilePhoto: file }))
+			}
+			reader.readAsDataURL(file)
+			setError("")
 		}
-	};
+	}
 
 	const handleAutoFill = () => {
 		setFormData({
@@ -171,46 +168,46 @@ export function RegisterForm() {
 			birth_certificate: null,
 			good_moral: null,
 			grade_card: null,
-		});
-	};
+		})
+	}
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();
-		setError("");
-		setProfilePhotoError("");
-		setLoading(true);
+		e.preventDefault()
+		setError("")
+		setProfilePhotoError("")
+		setLoading(true)
 
 		if (profilePhotoFile === null) {
-			setProfilePhotoError("Profile photo is required");
-			setLoading(false);
-			return;
+			setProfilePhotoError("Profile photo is required")
+			setLoading(false)
+			return
 		}
 
 		if (formData.password !== formData.confirmPassword) {
-			setError("Passwords do not match");
-			setLoading(false);
-			return;
+			setError("Passwords do not match")
+			setLoading(false)
+			return
 		}
 
 		// Require: min 8 chars, at least 1 lowercase, 1 uppercase, 1 number, and 1 special char
-		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/
 		if (!passwordRegex.test(formData.password)) {
 			setError(
 				"Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
-			);
-			setLoading(false);
-			return;
+			)
+			setLoading(false)
+			return
 		}
 
 		const result = await register({
 			...formData,
 			// Keep date_of_birth as string (YYYY-MM-DD format) - will be converted to ISO timestamp in API
 			date_of_birth: formData.date_of_birth || "",
-		});
+		})
 
 		if (result.success) {
 			// router.push("/");
-			setSuccess(result.message || "Registration successful");
+			setSuccess(result.message || "Registration successful")
 			setFormData({
 				first_name: "",
 				middle_name: "",
@@ -255,17 +252,17 @@ export function RegisterForm() {
 				birth_certificate: null,
 				good_moral: null,
 				grade_card: null,
-			});
-			setProfilePhotoFile(null);
-			setProfilePhotoPreview("");
-			setProfilePhotoError("");
-			setError("");
+			})
+			setProfilePhotoFile(null)
+			setProfilePhotoPreview("")
+			setProfilePhotoError("")
+			setError("")
 		} else {
-			setError(result.error || "Registration failed");
+			setError(result.error || "Registration failed")
 		}
 
-		setLoading(false);
-	};
+		setLoading(false)
+	}
 
 	return (
 		<Card className="w-full max-w-4xl mx-auto shadow-lg border-2 border-primary/20">
@@ -317,7 +314,7 @@ export function RegisterForm() {
 										accept="image/*"
 										onChange={handleProfilePhotoChange}
 										className="hidden"
-										id="profilePhoto"
+										id={useId}
 									/>
 									<Label htmlFor="profilePhoto" className="cursor-pointer">
 										<Button type="button" variant="outline" size="sm" asChild>
@@ -1112,5 +1109,5 @@ export function RegisterForm() {
 				</form>
 			</CardContent>
 		</Card>
-	);
+	)
 }

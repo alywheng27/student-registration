@@ -1,51 +1,51 @@
-"use client";
+"use client"
 
-import { useEffect, useState, useMemo } from "react";
+import { Bell, FileText, Upload, User } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/lib/auth";
-import { FileText, Upload, User, Bell } from "lucide-react";
-import Link from "next/link";
-import { getProfile, getApplication, getDocuments } from "@/lib/student_info";
+} from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { useAuth } from "@/lib/auth"
+import { getApplication, getDocuments, getProfile } from "@/lib/student_info"
 
 export function StudentDashboard() {
-	const [profile, setProfile] = useState();
-	const [application, setApplication] = useState();
-	const [documents, setDocuments] = useState();
-	const { user } = useAuth();
+	const [profile, setProfile] = useState()
+	const [application, setApplication] = useState()
+	const [documents, setDocuments] = useState()
+	const { user } = useAuth()
 
 	const profileData = async () => {
-		const data = await getProfile(user.id);
-		setProfile(data);
-	};
+		const data = await getProfile(user.id)
+		setProfile(data)
+	}
 
 	const applicationData = async () => {
-		const data = await getApplication(user.id);
-		setApplication(data);
-	};
+		const data = await getApplication(user.id)
+		setApplication(data)
+	}
 
 	const documentData = async () => {
-		const data = await getDocuments(user.id);
-		setDocuments(data);
-	};
+		const data = await getDocuments(user.id)
+		setDocuments(data)
+	}
 
 	useEffect(() => {
-		if (!user || !user.id) return; // Wait until user and user.id are available
+		if (!user || !user.id) return // Wait until user and user.id are available
 
-		profileData();
-		applicationData();
-		documentData();
+		profileData()
+		applicationData()
+		documentData()
 
-		console.log("work");
-	}, [user]);
+		console.log("work")
+	}, [user])
 
 	const statusColorMap = useMemo(
 		() => ({
@@ -56,11 +56,11 @@ export function StudentDashboard() {
 			default: "bg-yellow-500",
 		}),
 		[],
-	);
+	)
 
 	const getStatusColor = (status) => {
-		return statusColorMap[status] ?? statusColorMap.default;
-	};
+		return statusColorMap[status] ?? statusColorMap.default
+	}
 
 	const stepColorMap = useMemo(
 		() => ({
@@ -69,30 +69,30 @@ export function StudentDashboard() {
 			default: "bg-green-500 text-white",
 		}),
 		[],
-	);
+	)
 
 	const getStepColor = (step) => {
-		return stepColorMap[step] ?? stepColorMap.default;
-	};
+		return stepColorMap[step] ?? stepColorMap.default
+	}
 
-	const requiredDocuments = ["Birth Certificate", "Good Moral", "Grade Card"];
-	const uploadedDocuments = [];
-	const missingDocuments = [];
+	const requiredDocuments = ["Birth Certificate", "Good Moral", "Grade Card"]
+	const uploadedDocuments = []
+	const missingDocuments = []
 
 	if (documents) {
 		documents.birth_certificate !== null
 			? uploadedDocuments.push("Birth Certificate")
-			: missingDocuments.push("Birth Certificate");
+			: missingDocuments.push("Birth Certificate")
 		documents.good_moral !== null
 			? uploadedDocuments.push("Good Moral")
-			: missingDocuments.push("Good Moral");
+			: missingDocuments.push("Good Moral")
 		documents.grade_card !== null
 			? uploadedDocuments.push("Grade Card")
-			: missingDocuments.push("Grade Card");
+			: missingDocuments.push("Grade Card")
 	}
 
-	const requiredSteps = 3;
-	let steps = 0;
+	const requiredSteps = 3
+	let steps = 0
 
 	if (application) {
 		steps =
@@ -100,10 +100,10 @@ export function StudentDashboard() {
 				? 1
 				: application.Steps.step === "Eligibility Check"
 					? 2
-					: 3;
+					: 3
 	}
 
-	const completionPercentage = (steps / requiredSteps) * 100;
+	const completionPercentage = (steps / requiredSteps) * 100
 
 	return (
 		<div className="space-y-6">
@@ -111,15 +111,12 @@ export function StudentDashboard() {
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-3xl font-bold text-foreground">
-						Welcome, {profile && profile.first_name}{" "}
-						{profile && profile.surname}
+						Welcome, {profile?.first_name} {profile?.surname}
 					</h1>
-					<p className="text-muted-foreground">Email: {user && user.email}</p>
+					<p className="text-muted-foreground">Email: {user?.email}</p>
 				</div>
-				<Badge
-					className={getStatusColor(application && application.Status.status)}
-				>
-					{application && application.Status.status}
+				<Badge className={getStatusColor(application?.Status?.status)}>
+					{application?.Status?.status}
 				</Badge>
 			</div>
 
@@ -136,10 +133,8 @@ export function StudentDashboard() {
 								Track your application progress and requirements
 							</CardDescription>
 						</div>
-						<Badge
-							className={getStepColor(application && application.Steps.step)}
-						>
-							{application && application.Steps.step}
+						<Badge className={getStepColor(application?.Steps?.step)}>
+							{application?.Steps?.step}
 						</Badge>
 					</div>
 				</CardHeader>
@@ -160,8 +155,8 @@ export function StudentDashboard() {
 									Missing Documents
 								</h4>
 								<ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-									{missingDocuments.map((doc, index) => (
-										<li key={index}>• {doc}</li>
+									{missingDocuments.map((doc) => (
+										<li key={doc}>• {doc}</li>
 									))}
 								</ul>
 							</div>
@@ -170,7 +165,7 @@ export function StudentDashboard() {
 			</Card>
 
 			{/* Quick Actions */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<Link href="/student/document">
 					<Card className="cursor-pointer hover:shadow-md transition-shadow">
 						<CardContent className="flex items-center space-x-4 p-6">
@@ -202,20 +197,6 @@ export function StudentDashboard() {
 						</CardContent>
 					</Card>
 				</Link>
-
-				<Link href="/notifications">
-					<Card className="cursor-pointer hover:shadow-md transition-shadow">
-						<CardContent className="flex items-center space-x-4 p-6">
-							<div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-								<Bell className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-							</div>
-							<div>
-								<h3 className="font-medium">Notifications</h3>
-								<p className="text-sm text-muted-foreground">View updates</p>
-							</div>
-						</CardContent>
-					</Card>
-				</Link>
 			</div>
 
 			{/* Document Requirements */}
@@ -228,11 +209,11 @@ export function StudentDashboard() {
 				</CardHeader>
 				<CardContent>
 					<div className="space-y-3">
-						{requiredDocuments.map((doc, index) => {
-							const isUploaded = uploadedDocuments.find((uDoc) => doc === uDoc);
+						{requiredDocuments.map((doc) => {
+							const isUploaded = uploadedDocuments.find((uDoc) => doc === uDoc)
 							return (
 								<div
-									key={index}
+									key={doc}
 									className="flex items-center justify-between p-3 border rounded-lg"
 								>
 									<div className="flex items-center space-x-3">
@@ -245,7 +226,7 @@ export function StudentDashboard() {
 										{isUploaded ? "Uploaded" : "Required"}
 									</Badge>
 								</div>
-							);
+							)
 						})}
 					</div>
 					<Link href="/student/document">
@@ -257,5 +238,5 @@ export function StudentDashboard() {
 				</CardContent>
 			</Card>
 		</div>
-	);
+	)
 }

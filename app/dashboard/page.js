@@ -1,32 +1,32 @@
-"use client";
+"use client"
 
-import { useAuth } from "@/lib/auth";
-import { StudentDashboard } from "@/components/student/student-dashboard";
+import { LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { StudentDashboard } from "@/components/student/student-dashboard"
 // import { AdminDashboard } from "@/components/admin/admin-dashboard"
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button"
 import {
 	Dialog,
-	DialogTrigger,
+	DialogClose,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
-	DialogClose,
-} from "@/components/ui/dialog";
-import { useRouter } from "next/navigation";
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog"
+import { useAuth } from "@/lib/auth"
 
 export default function DashboardPage() {
-	const { user, userRole, logout } = useAuth();
-	const router = useRouter();
+	const { user, userRole, logout } = useAuth()
+	const router = useRouter()
 
 	const handleLogout = async () => {
-		const result = await logout();
+		const result = await logout()
 		if (result.success) {
-			router.push("/");
+			router.push("/")
 		}
-	};
+	}
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -35,7 +35,7 @@ export default function DashboardPage() {
 					<h1 className="text-xl font-bold">Student Registration System</h1>
 					<div className="flex items-center space-x-4">
 						<span className="text-sm text-muted-foreground">
-							{user && user.email} ({userRole})
+							{user?.email} ({userRole})
 						</span>
 						<Dialog>
 							<DialogTrigger asChild>
@@ -71,5 +71,5 @@ export default function DashboardPage() {
 				<StudentDashboard />
 			</main>
 		</div>
-	);
+	)
 }

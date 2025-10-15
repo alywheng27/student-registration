@@ -1,43 +1,46 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation"
+import { useId, useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
 	Card,
 	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@/lib/auth";
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useAuth } from "@/lib/auth"
 
 export function LoginForm() {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(false);
-	const { login } = useAuth();
-	const router = useRouter();
+	const [email, setEmail] = useState("")
+	const [password, setPassword] = useState("")
+	const [error, setError] = useState("")
+	const [loading, setLoading] = useState(false)
+	const { login } = useAuth()
+	const router = useRouter()
+
+	const emailId = useId()
+	const passwordId = useId()
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();
-		setError("");
-		setLoading(true);
+		e.preventDefault()
+		setError("")
+		setLoading(true)
 
-		const result = await login(email, password);
+		const result = await login(email, password)
 
 		if (result.success) {
-			router.push("/dashboard");
+			router.push("/dashboard")
 		} else {
-			setError(result.error || "Login failed");
+			setError(result.error || "Login failed")
 		}
 
-		setLoading(false);
-	};
+		setLoading(false)
+	}
 
 	return (
 		<Card className="w-full max-w-md mx-auto">
@@ -50,9 +53,9 @@ export function LoginForm() {
 			<CardContent>
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
+						<Label htmlFor={emailId}>Email</Label>
 						<Input
-							id="email"
+							id={emailId}
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
@@ -62,9 +65,9 @@ export function LoginForm() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="password">Password</Label>
+						<Label htmlFor={passwordId}>Password</Label>
 						<Input
-							id="password"
+							id={passwordId}
 							type="password"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
@@ -91,5 +94,5 @@ export function LoginForm() {
 				</div>
 			</CardContent>
 		</Card>
-	);
+	)
 }
