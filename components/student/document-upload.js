@@ -678,9 +678,9 @@ export function DocumentUpload({ onUploadComplete }) {
 
 								<div className="space-y-4">
 									<div>
-										<label className="text-sm font-medium text-muted-foreground">
+										<span className="text-sm font-medium text-muted-foreground">
 											Status
-										</label>
+										</span>
 										<div className="flex items-center gap-2 mt-1">
 											{/* {getStatusIcon(selectedDocument.status)} */}
 											<p
@@ -697,9 +697,9 @@ export function DocumentUpload({ onUploadComplete }) {
                   </div> */}
 
 									<div>
-										<label className="text-sm font-medium text-muted-foreground">
+										<span className="text-sm font-medium text-muted-foreground">
 											Submitted By
-										</label>
+										</span>
 										<div className="flex items-center gap-2">
 											<User className="h-4 w-4 text-muted-foreground" />
 											<p className="text-base">

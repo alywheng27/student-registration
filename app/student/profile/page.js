@@ -124,6 +124,7 @@ export default function ProfilePage() {
 	const [profilePhoto, setProfilePhoto] = useState(null)
 	const [photoFile, setPhotoFile] = useState(null)
 	const [photoPreview, setPhotoPreview] = useState(null)
+
 	const photouploadId = useId()
 	const firstNameId = useId()
 	const middleNameId = useId()

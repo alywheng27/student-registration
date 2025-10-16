@@ -85,6 +85,51 @@ export function RegisterForm() {
 	const [profilePhotoFile, setProfilePhotoFile] = useState(null)
 	const [profilePhotoPreview, setProfilePhotoPreview] = useState("")
 
+	const firstNameId = useId()
+	const middleNameId = useId()
+	const surnameId = useId()
+	const extensionNameId = useId()
+	const emailId = useId()
+	const phoneId = useId()
+	const date_of_birth_id = useId()
+	const place_of_birth_id = useId()
+	const religionId = useId()
+	const citizenshipId = useId()
+	const barangayId = useId()
+	const municipalityId = useId()
+	const provinceId = useId()
+
+	const elementary_school_id = useId()
+	const elementary_school_address_id = useId()
+	const elementary_year_graduated_id = useId()
+	const junior_high_school_id = useId()
+	const junior_high_school_address_id = useId()
+	const junior_high_year_graduated_id = useId()
+	const senior_high_school_id = useId()
+	const senior_high_school_address_id = useId()
+	const senior_high_year_graduated_id = useId()
+
+	const father_name_id = useId()
+	const father_occupation_id = useId()
+	const father_education_id = useId()
+	const mother_name_id = useId()
+	const mother_occupation_id = useId()
+	const mother_education_id = useId()
+	const monthly_income_id = useId()
+	const emergency_name_id = useId()
+	const emergency_relationship_id = useId()
+	const emergency_address_id = useId()
+	const emergency_phone_id = useId()
+
+	const birth_certificate_id = useId()
+	const good_moral_id = useId()
+	const grade_card_id = useId()
+
+	const password_id = useId()
+	const confirmPasswordId = useId()
+
+	const svgId = useId()
+
 	const { register } = useAuth()
 
 	const handleChange = (e) => {
@@ -345,9 +390,9 @@ export function RegisterForm() {
 					{/* Personal Info Section */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-2">
-							<Label htmlFor="first_name">First Name *</Label>
+							<Label htmlFor={firstNameId}>First Name *</Label>
 							<Input
-								id="first_name"
+								id={firstNameId}
 								name="first_name"
 								value={formData.first_name}
 								onChange={handleChange}
@@ -357,9 +402,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="middle_name">Middle Name</Label>
+							<Label htmlFor={middleNameId}>Middle Name</Label>
 							<Input
-								id="middle_name"
+								id={middleNameId}
 								name="middle_name"
 								value={formData.middle_name}
 								onChange={handleChange}
@@ -368,9 +413,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="surname">Surname *</Label>
+							<Label htmlFor={surnameId}>Surname *</Label>
 							<Input
-								id="surname"
+								id={surnameId}
 								name="surname"
 								value={formData.surname}
 								onChange={handleChange}
@@ -380,9 +425,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="extension_name">Extension Name</Label>
+							<Label htmlFor={extensionNameId}>Extension Name</Label>
 							<Input
-								id="extension_name"
+								id={extensionNameId}
 								name="extension_name"
 								value={formData.extension_name}
 								onChange={handleChange}
@@ -391,9 +436,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="email">Email Address *</Label>
+							<Label htmlFor={emailId}>Email Address *</Label>
 							<Input
-								id="email"
+								id={emailId}
 								name="email"
 								type="email"
 								value={formData.email}
@@ -404,9 +449,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="phone">Phone Number *</Label>
+							<Label htmlFor={phoneId}>Phone Number *</Label>
 							<Input
-								id="phone"
+								id={phoneId}
 								name="phone"
 								type="tel"
 								value={formData.phone}
@@ -417,9 +462,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="date_of_birth">Date of Birth *</Label>
+							<Label htmlFor={date_of_birth_id}>Date of Birth *</Label>
 							<Input
-								id="date_of_birth"
+								id={date_of_birth_id}
 								name="date_of_birth"
 								type="date"
 								value={formData.date_of_birth}
@@ -430,9 +475,9 @@ export function RegisterForm() {
 						</div>
 						{/* New fields start here */}
 						<div className="space-y-2">
-							<Label htmlFor="place_of_birth">Place of Birth *</Label>
+							<Label htmlFor={place_of_birth_id}>Place of Birth *</Label>
 							<Input
-								id="place_of_birth"
+								id={place_of_birth_id}
 								name="place_of_birth"
 								value={formData.place_of_birth || ""}
 								onChange={handleChange}
@@ -442,9 +487,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="religion">Religion *</Label>
+							<Label htmlFor={religionId}>Religion *</Label>
 							<Input
-								id="religion"
+								id={religionId}
 								name="religion"
 								value={formData.religion || ""}
 								onChange={handleChange}
@@ -454,9 +499,9 @@ export function RegisterForm() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="citizenship">Citizenship *</Label>
+							<Label htmlFor={citizenshipId}>Citizenship *</Label>
 							<Input
-								id="citizenship"
+								id={citizenshipId}
 								name="citizenship"
 								value={formData.citizenship || ""}
 								onChange={handleChange}
@@ -516,9 +561,9 @@ export function RegisterForm() {
 						</div>
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
 							<div className="space-y-2">
-								<Label htmlFor="barangay">Barangay *</Label>
+								<Label htmlFor={barangayId}>Barangay *</Label>
 								<Input
-									id="barangay"
+									id={barangayId}
 									name="barangay"
 									value={formData.barangay}
 									onChange={handleChange}
@@ -528,9 +573,9 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="municipality">Municipality *</Label>
+								<Label htmlFor={municipalityId}>Municipality *</Label>
 								<Input
-									id="municipality"
+									id={municipalityId}
 									name="municipality"
 									value={formData.municipality}
 									onChange={handleChange}
@@ -540,9 +585,9 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="province">Province *</Label>
+								<Label htmlFor={provinceId}>Province *</Label>
 								<Input
-									id="province"
+									id={provinceId}
 									name="province"
 									value={formData.province}
 									onChange={handleChange}
@@ -624,9 +669,9 @@ export function RegisterForm() {
 							<div className="mb-1 font-medium">Elementary School</div>
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-3">
 								<div className="space-y-2">
-									<Label htmlFor="elementary_school">School Name</Label>
+									<Label htmlFor={elementary_school_id}>School Name</Label>
 									<Input
-										id="elementary_school"
+										id={elementary_school_id}
 										name="elementary_school"
 										value={formData.elementary_school}
 										onChange={handleChange}
@@ -634,11 +679,11 @@ export function RegisterForm() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="elementary_school_address">
+									<Label htmlFor={elementary_school_address_id}>
 										School Address
 									</Label>
 									<Input
-										id="elementary_school_address"
+										id={elementary_school_address_id}
 										name="elementary_school_address"
 										value={formData.elementary_school_address}
 										onChange={handleChange}
@@ -646,11 +691,11 @@ export function RegisterForm() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="elementary_year_graduated">
+									<Label htmlFor={elementary_year_graduated_id}>
 										Year Graduated
 									</Label>
 									<Input
-										id="elementary_year_graduated"
+										id={elementary_year_graduated_id}
 										name="elementary_year_graduated"
 										value={formData.elementary_year_graduated}
 										onChange={handleChange}
@@ -667,9 +712,9 @@ export function RegisterForm() {
 							<div className="mb-1 font-medium">Junior High School</div>
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-3">
 								<div className="space-y-2">
-									<Label htmlFor="junior_high_school">School Name</Label>
+									<Label htmlFor={junior_high_school_id}>School Name</Label>
 									<Input
-										id="junior_high_school"
+										id={junior_high_school_id}
 										name="junior_high_school"
 										value={formData.junior_high_school}
 										onChange={handleChange}
@@ -677,11 +722,11 @@ export function RegisterForm() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="junior_high_school_address">
+									<Label htmlFor={junior_high_school_address_id}>
 										School Address
 									</Label>
 									<Input
-										id="junior_high_school_address"
+										id={junior_high_school_address_id}
 										name="junior_high_school_address"
 										value={formData.junior_high_school_address}
 										onChange={handleChange}
@@ -689,11 +734,11 @@ export function RegisterForm() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="junior_high_year_graduated">
+									<Label htmlFor={junior_high_year_graduated_id}>
 										Year Graduated
 									</Label>
 									<Input
-										id="junior_high_year_graduated"
+										id={junior_high_year_graduated_id}
 										name="junior_high_year_graduated"
 										value={formData.junior_high_year_graduated}
 										onChange={handleChange}
@@ -710,9 +755,9 @@ export function RegisterForm() {
 							<div className="mb-1 font-medium">Senior High School</div>
 							<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-3">
 								<div className="space-y-2">
-									<Label htmlFor="senior_high_school">School Name</Label>
+									<Label htmlFor={senior_high_school_id}>School Name</Label>
 									<Input
-										id="senior_high_school"
+										id={senior_high_school_id}
 										name="senior_high_school"
 										value={formData.senior_high_school}
 										onChange={handleChange}
@@ -720,11 +765,11 @@ export function RegisterForm() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="senior_high_school_address">
+									<Label htmlFor={senior_high_school_address_id}>
 										School Address
 									</Label>
 									<Input
-										id="senior_high_school_address"
+										id={senior_high_school_address_id}
 										name="senior_high_school_address"
 										value={formData.senior_high_school_address}
 										onChange={handleChange}
@@ -732,11 +777,11 @@ export function RegisterForm() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="senior_high_year_graduated">
+									<Label htmlFor={senior_high_year_graduated_id}>
 										Year Graduated
 									</Label>
 									<Input
-										id="senior_high_year_graduated"
+										id={senior_high_year_graduated_id}
 										name="senior_high_year_graduated"
 										value={formData.senior_high_year_graduated}
 										onChange={handleChange}
@@ -758,9 +803,9 @@ export function RegisterForm() {
 						</div>
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
 							<div className="space-y-2">
-								<Label htmlFor="father_name">Father&apos;s Name *</Label>
+								<Label htmlFor={father_name_id}>Father&apos;s Name *</Label>
 								<Input
-									id="father_name"
+									id={father_name_id}
 									name="father_name"
 									value={formData.father_name || ""}
 									onChange={handleChange}
@@ -770,11 +815,11 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="father_occupation">
+								<Label htmlFor={father_occupation_id}>
 									Father&apos;s Occupation *
 								</Label>
 								<Input
-									id="father_occupation"
+									id={father_occupation_id}
 									name="father_occupation"
 									value={formData.father_occupation || ""}
 									onChange={handleChange}
@@ -784,11 +829,11 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="father_education">
+								<Label htmlFor={father_education_id}>
 									Father&apos;s Educational Attainment *
 								</Label>
 								<Input
-									id="father_education"
+									id={father_education_id}
 									name="father_education"
 									value={formData.father_education || ""}
 									onChange={handleChange}
@@ -798,9 +843,9 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="mother_name">Mother&apos;s Name *</Label>
+								<Label htmlFor={mother_name_id}>Mother&apos;s Name *</Label>
 								<Input
-									id="mother_name"
+									id={mother_name_id}
 									name="mother_name"
 									value={formData.mother_name || ""}
 									onChange={handleChange}
@@ -810,11 +855,11 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="mother_occupation">
+								<Label htmlFor={mother_occupation_id}>
 									Mother&apos;s Occupation *
 								</Label>
 								<Input
-									id="mother_occupation"
+									id={mother_occupation_id}
 									name="mother_occupation"
 									value={formData.mother_occupation || ""}
 									onChange={handleChange}
@@ -824,11 +869,11 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="mother_education">
+								<Label htmlFor={mother_education_id}>
 									Mother&apos;s Educational Attainment *
 								</Label>
 								<Input
-									id="mother_education"
+									id={mother_education_id}
 									name="mother_education"
 									value={formData.mother_education || ""}
 									onChange={handleChange}
@@ -838,9 +883,9 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2 md:col-span-3">
-								<Label htmlFor="monthly_income">Monthly Income *</Label>
+								<Label htmlFor={monthly_income_id}>Monthly Income *</Label>
 								<Input
-									id="monthly_income"
+									id={monthly_income_id}
 									name="monthly_income"
 									value={formData.monthly_income || ""}
 									onChange={handleChange}
@@ -860,9 +905,9 @@ export function RegisterForm() {
 						</div>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
 							<div className="space-y-2">
-								<Label htmlFor="emergency_name">Name *</Label>
+								<Label htmlFor={emergency_name_id}>Name *</Label>
 								<Input
-									id="emergency_name"
+									id={emergency_name_id}
 									name="emergency_name"
 									value={formData.emergency_name || ""}
 									onChange={handleChange}
@@ -872,9 +917,11 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="emergency_relationship">Relationship *</Label>
+								<Label htmlFor={emergency_relationship_id}>
+									Relationship *
+								</Label>
 								<Input
-									id="emergency_relationship"
+									id={emergency_relationship_id}
 									name="emergency_relationship"
 									value={formData.emergency_relationship || ""}
 									onChange={handleChange}
@@ -884,9 +931,9 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2 md:col-span-2">
-								<Label htmlFor="emergency_address">Home Address *</Label>
+								<Label htmlFor={emergency_address_id}>Home Address *</Label>
 								<Input
-									id="emergency_address"
+									id={emergency_address_id}
 									name="emergency_address"
 									value={formData.emergency_address || ""}
 									onChange={handleChange}
@@ -896,9 +943,9 @@ export function RegisterForm() {
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label htmlFor="emergency_phone">Phone *</Label>
+								<Label htmlFor={emergency_phone_id}>Phone *</Label>
 								<Input
-									id="emergency_phone"
+									id={emergency_phone_id}
 									name="emergency_phone"
 									value={formData.emergency_phone || ""}
 									onChange={handleChange}
@@ -919,9 +966,11 @@ export function RegisterForm() {
 						<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
 							{/* Birth Certificate */}
 							<div className="space-y-2">
-								<Label htmlFor="birth_certificate">Birth Certificate *</Label>
+								<Label htmlFor={birth_certificate_id}>
+									Birth Certificate *
+								</Label>
 								<Input
-									id="birth_certificate"
+									id={birth_certificate_id}
 									name="birth_certificate"
 									type="file"
 									accept="application/pdf,image/*"
@@ -942,9 +991,9 @@ export function RegisterForm() {
 							</div>
 							{/* Good Moral */}
 							<div className="space-y-2">
-								<Label htmlFor="good_moral">Good Moral *</Label>
+								<Label htmlFor={good_moral_id}>Good Moral *</Label>
 								<Input
-									id="good_moral"
+									id={good_moral_id}
 									name="good_moral"
 									type="file"
 									accept="application/pdf,image/*"
@@ -965,9 +1014,9 @@ export function RegisterForm() {
 							</div>
 							{/* Grade Card */}
 							<div className="space-y-2">
-								<Label htmlFor="grade_card">Grade Card *</Label>
+								<Label htmlFor={grade_card_id}>Grade Card *</Label>
 								<Input
-									id="grade_card"
+									id={grade_card_id}
 									name="grade_card"
 									type="file"
 									accept="application/pdf,image/*"
@@ -993,10 +1042,10 @@ export function RegisterForm() {
 					{/* Password Section */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="space-y-2">
-							<Label htmlFor="password">Password *</Label>
+							<Label htmlFor={password_id}>Password *</Label>
 							<div className="relative">
 								<Input
-									id="password"
+									id={password_id}
 									name="password"
 									type={showPassword ? "text" : "password"}
 									value={formData.password}
@@ -1026,10 +1075,10 @@ export function RegisterForm() {
 							</p>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="confirmPassword">Confirm Password *</Label>
+							<Label htmlFor={confirmPasswordId}>Confirm Password *</Label>
 							<div className="relative">
 								<Input
-									id="confirmPassword"
+									id={confirmPasswordId}
 									name="confirmPassword"
 									type={showConfirmPassword ? "text" : "password"}
 									value={formData.confirmPassword}
@@ -1081,12 +1130,15 @@ export function RegisterForm() {
 						{loading ? (
 							<span className="flex items-center justify-center gap-2">
 								<svg
+									aria-labelledby={svgId}
 									className="animate-spin h-5 w-5 text-primary"
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
 									viewBox="0 0 24 24"
 								>
+									<title>Loading...</title>
 									<circle
+										id={svgId}
 										className="opacity-25"
 										cx="12"
 										cy="12"
@@ -1095,6 +1147,7 @@ export function RegisterForm() {
 										strokeWidth="4"
 									></circle>
 									<path
+										id={svgId}
 										className="opacity-75"
 										fill="currentColor"
 										d="M4 12a8 8 0 018-8v8z"

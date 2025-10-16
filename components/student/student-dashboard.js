@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, FileText, Upload, User } from "lucide-react"
+import { FileText, Upload, User } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
