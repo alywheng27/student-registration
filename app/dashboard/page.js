@@ -2,8 +2,8 @@
 
 import { LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AdminDashboard } from "@/components/admin/admin-dashboard"
 import { StudentDashboard } from "@/components/student/student-dashboard"
-// import { AdminDashboard } from "@/components/admin/admin-dashboard"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -67,8 +67,7 @@ export default function DashboardPage() {
 			</header>
 
 			<main className="container mx-auto sm:px-4 lg:px-[10%] py-8">
-				{/* {user.role === "student" ? <StudentDashboard /> : <AdminDashboard />} */}
-				<StudentDashboard />
+				{userRole === "Student" ? <StudentDashboard /> : <AdminDashboard />}
 			</main>
 		</div>
 	)
