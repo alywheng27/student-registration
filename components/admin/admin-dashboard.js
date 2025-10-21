@@ -295,10 +295,10 @@ export function AdminDashboard() {
 	const profileApplicationData = useCallback(() => {
 		if (profiles.length > 0 && applications.length > 0) {
 			const combinedData = profiles.map((p) => {
-				const usr = users.users.find((u) => u.id === p.uid)
-				const doc = documents.find((d) => d.uid === p.uid)
-				const add = addresses.find((a) => a.uid === p.uid)
-				const app = applications.find((a) => a.uid === p.uid)
+				const usr = users?.users?.find((u) => u.id === p.uid)
+				const doc = documents?.find((d) => d.uid === p.uid)
+				const add = addresses?.find((a) => a.uid === p.uid)
+				const app = applications?.find((a) => a.uid === p.uid)
 				return {
 					...p,
 					email: usr ? usr.email : "N/A",
@@ -314,14 +314,44 @@ export function AdminDashboard() {
 								? Math.round((2 / DOCUMENT_COUNT) * 100)
 								: Math.round((3 / DOCUMENT_COUNT) * 100),
 					documents: [
-						doc?.birth_certificate ? "Birth Certificate" : "",
-						doc?.good_moral ? "Good Moral" : "",
-						doc?.grade_card ? "Grade Card" : "",
+						{
+							type: doc?.birth_certificate ? "Birth Certificate" : "",
+							name: doc?.birth_certificate,
+							status: doc?.birth_certificate_status,
+							created_at: doc?.created_at,
+						},
+						{
+							type: doc?.good_moral ? "Good Moral" : "",
+							name: doc?.good_moral,
+							status: doc?.good_moral_status,
+							created_at: doc?.created_at,
+						},
+						{
+							type: doc?.grade_card ? "Grade Card" : "",
+							name: doc?.grade_card,
+							status: doc?.grade_card_status,
+							created_at: doc?.created_at,
+						},
 					],
 					missingDocuments: [
-						doc?.birth_certificate ? "" : "Birth Certificate",
-						doc?.good_moral ? "" : "Good Moral",
-						doc?.grade_card ? "" : "Grade Card",
+						{
+							type: doc?.birth_certificate ? "" : "Birth Certificate",
+							name: doc?.birth_certificate,
+							status: doc?.birth_certificate_status,
+							created_at: doc?.created_at,
+						},
+						{
+							type: doc?.good_moral ? "" : "Good Moral",
+							name: doc?.good_moral,
+							status: doc?.good_moral_status,
+							created_at: doc?.created_at,
+						},
+						{
+							type: doc?.grade_card ? "" : "Grade Card",
+							name: doc?.grade_card,
+							status: doc?.grade_card_status,
+							created_at: doc?.created_at,
+						},
 					],
 				}
 			})
@@ -468,14 +498,16 @@ export function AdminDashboard() {
 
 	const getDocumentStatusBadge = (status) => {
 		switch (status) {
-			case "approved":
+			case 3:
 				return <Badge className="bg-green-500">Approved</Badge>
-			case "rejected":
+			case 4:
 				return <Badge variant="destructive">Rejected</Badge>
-			case "pending":
-				return <Badge className="bg-blue-500">Pending</Badge>
+			case 1:
+				return <Badge variant="secondary">Pending</Badge>
+			case 2:
+				return <Badge className="bg-blue-500">In Progress</Badge>
 			default:
-				return <Badge variant="secondary">Unknown</Badge>
+				return <Badge className="bg-yellow-500">Incomplete</Badge>
 		}
 	}
 
@@ -773,8 +805,8 @@ export function AdminDashboard() {
 												</h5>
 												<ul className="text-sm text-muted-foreground">
 													{application.documents.map((doc) => {
-														if (doc !== "") {
-															return <li key={doc}>• {doc}</li>
+														if (doc?.type !== "") {
+															return <li key={doc?.type}>• {doc?.type}</li>
 														} else {
 															return null
 														}
@@ -788,8 +820,8 @@ export function AdminDashboard() {
 													</h5>
 													<ul className="text-sm text-muted-foreground">
 														{application.missingDocuments.map((doc) => {
-															if (doc !== "") {
-																return <li key={doc}>• {doc}</li>
+															if (doc?.type !== "") {
+																return <li key={doc?.type}>• {doc?.type}</li>
 															} else {
 																return null
 															}
@@ -1047,75 +1079,94 @@ export function AdminDashboard() {
 												</span>
 												{getStatusBadge(selectedApplication.applicationStatus)}
 											</div>
-											{/* <div className="flex items-center gap-2">
-												<span className="text-sm font-medium">Student ID:</span>
-												<span className="text-sm">
-													{selectedApplication.studentId}
-												</span>
-											</div> */}
 											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">Uploaded Documents:</span>
+												<span className="text-sm font-medium">
+													Uploaded Documents:
+												</span>
 												<span className="text-sm">
-													{selectedApplication?.documents?.filter((d) => d !== "")?.length} uploaded
+													{
+														selectedApplication?.documents?.filter(
+															(d) => d !== "",
+														)?.length
+													}{" "}
+													uploaded
 												</span>
 											</div>
 											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">Missing Documents:</span>
+												<span className="text-sm font-medium">
+													Missing Documents:
+												</span>
 												<span className="text-sm">
-												{selectedApplication?.missingDocuments?.filter((d) => d !== "")?.length} missing
+													{
+														selectedApplication?.missingDocuments?.filter(
+															(d) => d !== "",
+														)?.length
+													}{" "}
+													missing
 												</span>
 											</div>
 										</CardContent>
 									</Card>
 								</div>
 
-								{/* <Card>
+								<Card>
 									<CardHeader>
 										<CardTitle className="text-lg">Document Review</CardTitle>
 									</CardHeader>
 									<CardContent>
 										<div className="space-y-3">
-											{selectedApplication.detailedDocuments.map(
-												(doc, index) => (
-													<div
-														key={index}
-														className="flex items-center justify-between p-3 border rounded-lg"
-													>
-														<div className="flex items-center gap-3">
-															<FileText className="h-5 w-5 text-muted-foreground" />
-															<div>
-																<h4 className="font-medium">{doc.name}</h4>
-																<p className="text-sm text-muted-foreground">
-																	Uploaded:{" "}
-																	{new Date(
-																		doc.uploadedAt,
-																	).toLocaleDateString()}
-																</p>
+											{selectedApplication.documents.map((doc) => {
+												if (doc.type !== "") {
+													return (
+														<div
+															key={doc.type}
+															className="flex items-center justify-between p-3 border rounded-lg"
+														>
+															<div className="flex items-center gap-3">
+																<FileText className="h-5 w-5 text-muted-foreground" />
+																<div>
+																	<h4 className="font-medium">{doc.type}</h4>
+																	<p className="text-sm text-muted-foreground">
+																		Uploaded:{" "}
+																		{format(new Date(doc.created_at), "PPP")}
+																	</p>
+																</div>
+															</div>
+															<div className="flex items-center gap-2">
+																{getDocumentStatusBadge(doc.status)}
+																<Link href={doc.name} target="_blank">
+																	<Button size="sm" variant="outline">
+																		<Eye className="h-4 w-4 mr-1" />
+																		View
+																	</Button>
+																</Link>
 															</div>
 														</div>
-														<div className="flex items-center gap-2">
-															{getDocumentStatusBadge(doc.status)}
-															<Button size="sm" variant="outline">
-																<Eye className="h-4 w-4 mr-1" />
-																View
-															</Button>
-														</div>
-													</div>
-												),
-											)}
+													)
+												} else {
+													return null
+												}
+											})}
 
-											{selectedApplication.missingDocuments.length > 0 && (
-												<Alert>
-													<AlertTriangle className="h-4 w-4" />
-													<AlertDescription>
-														<strong>Missing Documents:</strong>{" "}
-														{selectedApplication.missingDocuments.join(", ")}
-													</AlertDescription>
-												</Alert>
-											)}
+											{selectedApplication?.missingDocuments?.map((doc) => {
+												if (doc.type !== "") {
+													return (
+														<Alert key={doc.type}>
+															<AlertTriangle className="h-4 w-4" />
+															<AlertDescription>
+																<span>
+																	<strong>Missing Document:</strong> {doc.type}
+																</span>
+															</AlertDescription>
+														</Alert>
+													)
+												} else {
+													return null
+												}
+											})}
 										</div>
 									</CardContent>
-								</Card> */}
+								</Card>
 							</div>
 
 							<div className="flex justify-end">
