@@ -1,5 +1,6 @@
 "use client"
 
+import { format } from "date-fns"
 import {
 	AlertTriangle,
 	Calendar,
@@ -23,7 +24,7 @@ import {
 	XCircle,
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -44,9 +45,23 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth"
+import {
+	getAddressWithoutId,
+	getApplicationWithoutId,
+	getDocumentsWithoutId,
+	getProfileWithoutId,
+	getUserWithoutId,
+} from "@/lib/student_info"
 
 const mockApplications = [
 	{
@@ -234,28 +249,121 @@ export function AdminDashboard() {
 	})
 	const [adminUsers, setAdminUsers] = useState(mockAdminUsers)
 	const [formErrors, setFormErrors] = useState(null)
+	const [profiles, setProfiles] = useState([])
+	const [addresses, setAddresses] = useState([])
+	const [applications, setApplications] = useState([])
+	const [documents, setDocuments] = useState([])
+	const [users, setUsers] = useState([])
+	const [profileApplication, setProfileApplication] = useState([])
+
+	const DOCUMENT_COUNT = 3
+
+	const profileData = useCallback(async () => {
+		const data = await getProfileWithoutId()
+		setProfiles(data)
+	}, [])
+
+	const addressData = useCallback(async () => {
+		const data = await getAddressWithoutId()
+		setAddresses(data)
+	}, [])
+
+	const applicationData = useCallback(async () => {
+		const data = await getApplicationWithoutId()
+		setApplications(data)
+	}, [])
+
+	const documentData = useCallback(async () => {
+		const data = await getDocumentsWithoutId()
+		setDocuments(data)
+	}, [])
+
+	const userData = useCallback(async () => {
+		const data = await getUserWithoutId()
+		console.log(data)
+		setUsers(data)
+	}, [])
+
+	useEffect(() => {
+		profileData()
+		addressData()
+		applicationData()
+		documentData()
+		userData()
+	}, [profileData, addressData, applicationData, documentData, userData])
+
+	const profileApplicationData = useCallback(() => {
+		if (profiles.length > 0 && applications.length > 0) {
+			const combinedData = profiles.map((p) => {
+				const usr = users.users.find((u) => u.id === p.uid)
+				const doc = documents.find((d) => d.uid === p.uid)
+				const add = addresses.find((a) => a.uid === p.uid)
+				const app = applications.find((a) => a.uid === p.uid)
+				return {
+					...p,
+					email: usr ? usr.email : "N/A",
+					applicationStatus: app ? app.Status.status : "N/A",
+					currentStep: app ? app.Steps.step : "N/A",
+					barangay: add ? add.barangay : "N/A",
+					municipality: add ? add.municipality : "N/A",
+					province: add ? add.province : "N/A",
+					progress:
+						app.Steps.step === "Document Verification"
+							? Math.round((1 / DOCUMENT_COUNT) * 100)
+							: app.Steps.step === "Eligibility Check"
+								? Math.round((2 / DOCUMENT_COUNT) * 100)
+								: Math.round((3 / DOCUMENT_COUNT) * 100),
+					documents: [
+						doc?.birth_certificate ? "Birth Certificate" : "",
+						doc?.good_moral ? "Good Moral" : "",
+						doc?.grade_card ? "Grade Card" : "",
+					],
+					missingDocuments: [
+						doc?.birth_certificate ? "" : "Birth Certificate",
+						doc?.good_moral ? "" : "Good Moral",
+						doc?.grade_card ? "" : "Grade Card",
+					],
+				}
+			})
+			setProfileApplication(combinedData)
+		}
+	}, [profiles, applications, documents, users])
+
+	useEffect(() => {
+		profileApplicationData()
+	}, [profileApplicationData])
 
 	// Calculate statistics
 	const stats = {
-		totalApplications: mockApplications.length,
-		pendingReview: mockApplications.filter((app) => app.status === "pending")
-			.length,
-		approved: mockApplications.filter((app) => app.status === "approved")
-			.length,
-		rejected: mockApplications.filter((app) => app.status === "rejected")
-			.length,
-		incomplete: mockApplications.filter((app) => app.status === "incomplete")
-			.length,
+		totalApplications: profiles.length,
+		pendingReview: applications?.filter(
+			(app) => app.Status.status === "Pending",
+		).length,
+		inProgressReview: applications?.filter(
+			(app) => app.Status.status === "In Progress",
+		).length,
+		approvedReview: applications?.filter(
+			(app) => app.Status.status === "Approved",
+		).length,
+		rejectedReview: applications?.filter(
+			(app) => app.Status.status === "Rejected",
+		).length,
+		incompleteReview: applications?.filter(
+			(app) => app.Status.status === "Incomplete",
+		).length,
 	}
 
 	// Filter applications
-	const filteredApplications = mockApplications.filter((app) => {
+	let filteredApplications = []
+	filteredApplications = profileApplication.filter((app) => {
 		const matchesSearch =
-			app.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			app.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			app.studentId.toLowerCase().includes(searchTerm.toLowerCase())
+			app.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			app.surname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			app.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			app.studentId?.toLowerCase().includes(searchTerm.toLowerCase())
 
-		const matchesStatus = statusFilter === "all" || app.status === statusFilter
+		const matchesStatus =
+			statusFilter === "all" || app.applicationStatus === statusFilter
 
 		return matchesSearch && matchesStatus
 	})
@@ -345,14 +453,16 @@ export function AdminDashboard() {
 
 	const getStatusIcon = (status) => {
 		switch (status) {
-			case "approved":
+			case "Approved":
 				return <CheckCircle className="h-5 w-5 text-green-500" />
-			case "rejected":
+			case "Rejected":
 				return <XCircle className="h-5 w-5 text-red-500" />
-			case "incomplete":
+			case "Incomplete":
 				return <AlertTriangle className="h-5 w-5 text-yellow-500" />
+			case "In Progress":
+				return <GitBranch className="h-5 w-5 text-blue-500" />
 			default:
-				return <Clock className="h-5 w-5 text-blue-500" />
+				return <Clock className="h-5 w-5 text-gray-500" />
 		}
 	}
 
@@ -495,12 +605,6 @@ export function AdminDashboard() {
 					<p className="text-muted-foreground">Welcome back, {user?.email}</p>
 				</div>
 				<div className="flex items-center gap-3">
-					<Link href="/admin/workflow">
-						<Button className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700">
-							<GitBranch className="h-4 w-4" />
-							Workflow Management
-						</Button>
-					</Link>
 					<Button onClick={exportData} className="flex items-center gap-2">
 						<Download className="h-4 w-4" />
 						Export Data
@@ -509,7 +613,7 @@ export function AdminDashboard() {
 			</div>
 
 			{/* Statistics Cards */}
-			{/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 				<Card>
 					<CardContent className="flex items-center space-x-4 p-6">
 						<div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
@@ -531,7 +635,7 @@ export function AdminDashboard() {
 						</div>
 						<div>
 							<h3 className="text-2xl font-bold">{stats.pendingReview}</h3>
-							<p className="text-sm text-muted-foreground">Pending Review</p>
+							<p className="text-sm text-muted-foreground">Pending</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -542,7 +646,21 @@ export function AdminDashboard() {
 							<FileCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
 						</div>
 						<div>
-							<h3 className="text-2xl font-bold">{stats.approved}</h3>
+							<h3 className="text-2xl font-bold">{stats.inProgressReview}</h3>
+							<p className="text-sm text-muted-foreground">In Progress</p>
+						</div>
+					</CardContent>
+				</Card>
+			</div>
+
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+				<Card>
+					<CardContent className="flex items-center space-x-4 p-6">
+						<div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+							<FileCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+						</div>
+						<div>
+							<h3 className="text-2xl font-bold">{stats.approvedReview}</h3>
 							<p className="text-sm text-muted-foreground">Approved</p>
 						</div>
 					</CardContent>
@@ -554,7 +672,7 @@ export function AdminDashboard() {
 							<UserPlus className="h-6 w-6 text-red-600 dark:text-red-400" />
 						</div>
 						<div>
-							<h3 className="text-2xl font-bold">{stats.rejected}</h3>
+							<h3 className="text-2xl font-bold">{stats.rejectedReview}</h3>
 							<p className="text-sm text-muted-foreground">Rejected</p>
 						</div>
 					</CardContent>
@@ -566,15 +684,15 @@ export function AdminDashboard() {
 							<Filter className="h-6 w-6 text-orange-600 dark:text-orange-400" />
 						</div>
 						<div>
-							<h3 className="text-2xl font-bold">{stats.incomplete}</h3>
+							<h3 className="text-2xl font-bold">{stats.incompleteReview}</h3>
 							<p className="text-sm text-muted-foreground">Incomplete</p>
 						</div>
 					</CardContent>
 				</Card>
-			</div> */}
+			</div>
 
 			{/* Main Content Tabs */}
-			{/* <Tabs defaultValue="applications" className="space-y-4">
+			<Tabs defaultValue="applications" className="space-y-4">
 				<TabsList>
 					<TabsTrigger value="applications">Applications</TabsTrigger>
 					<TabsTrigger value="users">User Management</TabsTrigger>
@@ -591,12 +709,6 @@ export function AdminDashboard() {
 										Review and manage student applications
 									</CardDescription>
 								</div>
-								<Link href="/admin/applications">
-									<Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-										<FileCheck className="h-4 w-4" />
-										View All Applications
-									</Button>
-								</Link>
 							</div>
 						</CardHeader>
 						<CardContent>
@@ -610,41 +722,46 @@ export function AdminDashboard() {
 										className="pl-10"
 									/>
 								</div>
-								<select
-									value={statusFilter}
-									onChange={(e) => setStatusFilter(e.target.value)}
-									className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-								>
-									<option value="all">All Status</option>
-									<option value="pending">Pending</option>
-									<option value="approved">Approved</option>
-									<option value="rejected">Rejected</option>
-									<option value="incomplete">Incomplete</option>
-								</select>
+								<Select onValueChange={setStatusFilter} value={statusFilter}>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue placeholder="Filter by Status" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="all">All Status</SelectItem>
+										<SelectItem value="Pending">Pending</SelectItem>
+										<SelectItem value="In Progress">In Progress</SelectItem>
+										<SelectItem value="Approved">Approved</SelectItem>
+										<SelectItem value="Rejected">Rejected</SelectItem>
+										<SelectItem value="Incomplete">Incomplete</SelectItem>
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-4">
-								{filteredApplications.map((application) => (
+								{filteredApplications?.map((application) => (
 									<div key={application.id} className="border rounded-lg p-4">
 										<div className="flex items-center justify-between mb-3">
-											<div>
-												<h4 className="font-semibold text-lg">
-													{application.studentName}
-												</h4>
-												<p className="text-sm text-muted-foreground">
-													{application.email}
-												</p>
-												<p className="text-xs text-muted-foreground">
-													ID: {application.studentId}
-												</p>
+											<div className="flex items-center gap-3">
+												<div>
+													{getStatusIcon(application.applicationStatus)}
+												</div>
+												<div>
+													<h4 className="font-semibold text-lg">
+														{application.first_name} {application.surname}
+													</h4>
+													<p className="text-sm text-muted-foreground">
+														{application.email}
+													</p>
+													<p className="text-xs text-muted-foreground">
+														{application.phone}
+													</p>
+												</div>
 											</div>
 											<div className="text-right">
 												{getStatusBadge(application.status)}
 												<p className="text-xs text-muted-foreground mt-1">
 													Submitted:{" "}
-													{new Date(
-														application.submittedAt,
-													).toLocaleDateString()}
+													{format(new Date(application.created_at), "PPP")}
 												</p>
 											</div>
 										</div>
@@ -655,9 +772,13 @@ export function AdminDashboard() {
 													Uploaded Documents:
 												</h5>
 												<ul className="text-sm text-muted-foreground">
-													{application.documents.map((doc, index) => (
-														<li key={index}>• {doc}</li>
-													))}
+													{application.documents.map((doc) => {
+														if (doc !== "") {
+															return <li key={doc}>• {doc}</li>
+														} else {
+															return null
+														}
+													})}
 												</ul>
 											</div>
 											{application.missingDocuments.length > 0 && (
@@ -666,15 +787,44 @@ export function AdminDashboard() {
 														Missing Documents:
 													</h5>
 													<ul className="text-sm text-muted-foreground">
-														{application.missingDocuments.map((doc, index) => (
-															<li key={index}>• {doc}</li>
-														))}
+														{application.missingDocuments.map((doc) => {
+															if (doc !== "") {
+																return <li key={doc}>• {doc}</li>
+															} else {
+																return null
+															}
+														})}
 													</ul>
 												</div>
 											)}
 										</div>
 
-										<div className="flex gap-2">
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+											<div>
+												<h5 className="text-sm font-medium mb-1">
+													Current Step:
+												</h5>
+												<p className="text-sm text-muted-foreground">
+													{application.currentStep}
+												</p>
+											</div>
+											<div>
+												<h5 className="text-sm font-medium mb-1">Progress:</h5>
+												<div className="flex items-center space-x-2">
+													<div className="flex-1 bg-gray-200 rounded-full h-2">
+														<div
+															className="bg-purple-600 h-2 rounded-full"
+															style={{ width: `${application.progress}%` }}
+														></div>
+													</div>
+													<span className="text-sm text-muted-foreground">
+														{application.progress}%
+													</span>
+												</div>
+											</div>
+										</div>
+
+										<div className="flex gap-2 mt-5">
 											<Button
 												size="sm"
 												variant="outline"
@@ -692,34 +842,6 @@ export function AdminDashboard() {
 													Manage Workflow
 												</Button>
 											</Link>
-											{application.status === "pending" && (
-												<>
-													<Button
-														size="sm"
-														className="bg-green-600 hover:bg-green-700"
-														onClick={() => openModal(application, "approve")}
-													>
-														<CheckCircle className="h-4 w-4 mr-1" />
-														Approve
-													</Button>
-													<Button
-														size="sm"
-														variant="destructive"
-														onClick={() => openModal(application, "reject")}
-													>
-														<XCircle className="h-4 w-4 mr-1" />
-														Reject
-													</Button>
-													<Button
-														size="sm"
-														className="bg-yellow-600 hover:bg-yellow-700"
-														onClick={() => openModal(application, "incomplete")}
-													>
-														<AlertTriangle className="h-4 w-4 mr-1" />
-														Mark Incomplete
-													</Button>
-												</>
-											)}
 										</div>
 									</div>
 								))}
@@ -728,7 +850,7 @@ export function AdminDashboard() {
 					</Card>
 				</TabsContent>
 
-				<TabsContent value="users" className="space-y-4">
+				{/* <TabsContent value="users" className="space-y-4">
 					<Card>
 						<CardHeader>
 							<CardTitle>User Management</CardTitle>
@@ -802,9 +924,9 @@ export function AdminDashboard() {
 							</div>
 						</CardContent>
 					</Card>
-				</TabsContent>
+				</TabsContent> */}
 
-				<TabsContent value="reports" className="space-y-4">
+				{/* <TabsContent value="reports" className="space-y-4">
 					<Card>
 						<CardHeader>
 							<CardTitle>Reports & Analytics</CardTitle>
@@ -844,18 +966,19 @@ export function AdminDashboard() {
 							</div>
 						</CardContent>
 					</Card>
-				</TabsContent>
-			</Tabs> */}
+				</TabsContent> */}
+			</Tabs>
 
 			{/* Added modal dialogs for different actions */}
-			{/* <Dialog open={modalType !== null} onOpenChange={closeModal}>
-				<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+			<Dialog open={modalType !== null} onOpenChange={closeModal}>
+				<DialogContent className="min-w-2xl max-h-[90vh] overflow-y-auto">
 					{modalType === "view" && selectedApplication && (
 						<>
 							<DialogHeader>
 								<DialogTitle className="flex items-center gap-2">
-									{getStatusIcon(selectedApplication.status)}
-									Application Details - {selectedApplication.studentName}
+									{getStatusIcon(selectedApplication.applicationStatus)}
+									Application Details - {selectedApplication.first_name}{" "}
+									{selectedApplication.surname}
 								</DialogTitle>
 								<DialogDescription>
 									Complete overview of student application and documents
@@ -874,7 +997,8 @@ export function AdminDashboard() {
 											<div className="flex items-center gap-2">
 												<Users className="h-4 w-4 text-muted-foreground" />
 												<span className="font-medium">
-													{selectedApplication.studentName}
+													{selectedApplication.first_name}{" "}
+													{selectedApplication.surname}
 												</span>
 											</div>
 											<div className="flex items-center gap-2">
@@ -892,16 +1016,19 @@ export function AdminDashboard() {
 											<div className="flex items-center gap-2">
 												<MapPin className="h-4 w-4 text-muted-foreground" />
 												<span className="text-sm">
-													{selectedApplication.address}
+													{selectedApplication.barangay} {", "}
+													{selectedApplication.municipality} {", "}
+													{selectedApplication.province}
 												</span>
 											</div>
 											<div className="flex items-center gap-2">
 												<Calendar className="h-4 w-4 text-muted-foreground" />
 												<span className="text-sm">
 													Submitted:{" "}
-													{new Date(
-														selectedApplication.submittedAt,
-													).toLocaleDateString()}
+													{format(
+														new Date(selectedApplication.created_at),
+														"PPP",
+													)}
 												</span>
 											</div>
 										</CardContent>
@@ -918,32 +1045,31 @@ export function AdminDashboard() {
 												<span className="text-sm font-medium">
 													Current Status:
 												</span>
-												{getStatusBadge(selectedApplication.status)}
+												{getStatusBadge(selectedApplication.applicationStatus)}
 											</div>
-											<div className="flex items-center gap-2">
+											{/* <div className="flex items-center gap-2">
 												<span className="text-sm font-medium">Student ID:</span>
 												<span className="text-sm">
 													{selectedApplication.studentId}
 												</span>
-											</div>
+											</div> */}
 											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">Documents:</span>
+												<span className="text-sm font-medium">Uploaded Documents:</span>
 												<span className="text-sm">
-													{selectedApplication.documents.length} uploaded
+													{selectedApplication?.documents?.filter((d) => d !== "")?.length} uploaded
 												</span>
 											</div>
 											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">Missing:</span>
+												<span className="text-sm font-medium">Missing Documents:</span>
 												<span className="text-sm">
-													{selectedApplication.missingDocuments.length}{" "}
-													documents
+												{selectedApplication?.missingDocuments?.filter((d) => d !== "")?.length} missing
 												</span>
 											</div>
 										</CardContent>
 									</Card>
 								</div>
 
-								<Card>
+								{/* <Card>
 									<CardHeader>
 										<CardTitle className="text-lg">Document Review</CardTitle>
 									</CardHeader>
@@ -989,7 +1115,7 @@ export function AdminDashboard() {
 											)}
 										</div>
 									</CardContent>
-								</Card>
+								</Card> */}
 							</div>
 
 							<div className="flex justify-end">
@@ -998,7 +1124,7 @@ export function AdminDashboard() {
 						</>
 					)}
 
-					{(modalType === "approve" ||
+					{/* {(modalType === "approve" ||
 						modalType === "reject" ||
 						modalType === "incomplete") &&
 						selectedApplication && (
@@ -1140,9 +1266,9 @@ export function AdminDashboard() {
 									</Button>
 								</div>
 							</>
-						)}
+						)} */}
 				</DialogContent>
-			</Dialog> */}
+			</Dialog>
 
 			{/* <Dialog open={adminModalType !== null} onOpenChange={closeAdminModal}>
 				<DialogContent className="max-w-2xl">
