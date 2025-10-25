@@ -24,7 +24,8 @@ import {
 	XCircle,
 } from "lucide-react"
 import Link from "next/link"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useId, useState } from "react"
+import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -57,6 +58,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth"
 import {
 	getAddressWithoutId,
+	getAdminWithoutId,
 	getApplicationWithoutId,
 	getDocumentsWithoutId,
 	getProfileWithoutId,
@@ -231,7 +233,7 @@ const availablePermissions = [
 ]
 
 export function AdminDashboard() {
-	const { user, userRole } = useAuth()
+	const { user, userRole, addAdmin } = useAuth()
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState("all")
 
@@ -243,9 +245,13 @@ export function AdminDashboard() {
 	const [adminModalType, setAdminModalType] = useState(null)
 	const [selectedAdmin, setSelectedAdmin] = useState(null)
 	const [adminFormData, setAdminFormData] = useState({
-		name: "",
+		first_name: "",
+		middle_name: "",
+		surname: "",
+		extension_name: "",
 		email: "",
-		permissions: [],
+		password: "",
+		confirm_password: "",
 	})
 	const [adminUsers, setAdminUsers] = useState(mockAdminUsers)
 	const [formErrors, setFormErrors] = useState(null)
@@ -254,7 +260,17 @@ export function AdminDashboard() {
 	const [applications, setApplications] = useState([])
 	const [documents, setDocuments] = useState([])
 	const [users, setUsers] = useState([])
+	const [admins, setAdmins] = useState([])
 	const [profileApplication, setProfileApplication] = useState([])
+	const [adminApplication, setAdminApplication] = useState([])
+
+	const adminFirstNameId = useId()
+	const adminMiddleNameId = useId()
+	const adminSurnameId = useId()
+	const adminExtensionNameId = useId()
+	const adminEmailId = useId()
+	const adminPasswordId = useId()
+	const adminConfirmPasswordId = useId()
 
 	const DOCUMENT_COUNT = 3
 
@@ -280,8 +296,12 @@ export function AdminDashboard() {
 
 	const userData = useCallback(async () => {
 		const data = await getUserWithoutId()
-		console.log(data)
 		setUsers(data)
+	}, [])
+
+	const adminData = useCallback(async () => {
+		const data = await getAdminWithoutId()
+		setAdmins(data)
 	}, [])
 
 	useEffect(() => {
@@ -290,7 +310,15 @@ export function AdminDashboard() {
 		applicationData()
 		documentData()
 		userData()
-	}, [profileData, addressData, applicationData, documentData, userData])
+		adminData()
+	}, [
+		profileData,
+		addressData,
+		applicationData,
+		documentData,
+		userData,
+		adminData,
+	])
 
 	const profileApplicationData = useCallback(() => {
 		if (profiles.length > 0 && applications.length > 0) {
@@ -357,11 +385,29 @@ export function AdminDashboard() {
 			})
 			setProfileApplication(combinedData)
 		}
-	}, [profiles, applications, documents, users])
+	}, [profiles, applications, documents, users, addresses])
+
+	const adminApplicationData = useCallback(() => {
+		if (admins.length > 0) {
+			const combineData = admins.map((a) => {
+				const usr = users?.users?.find((u) => u.id === a.uid)
+				return {
+					...a,
+					email: usr ? usr.email : "N/A",
+				}
+			})
+			console.log(combineData)
+			setAdminApplication(combineData)
+		}
+	}, [admins, users])
 
 	useEffect(() => {
 		profileApplicationData()
 	}, [profileApplicationData])
+
+	useEffect(() => {
+		adminApplicationData()
+	}, [adminApplicationData])
 
 	// Calculate statistics
 	const stats = {
@@ -517,12 +563,24 @@ export function AdminDashboard() {
 		setFormErrors({})
 
 		if (type === "add") {
-			setAdminFormData({ name: "", email: "", permissions: [] })
+			setAdminFormData({
+				first_name: "",
+				middle_name: "",
+				surname: "",
+				extension_name: "",
+				email: "",
+				password: "",
+				confirm_password: "",
+			})
 		} else if (type === "edit" && adminUser) {
 			setAdminFormData({
-				name: adminUser.name,
+				first_name: adminUser.name,
+				middle_name: adminUser.middle_name,
+				surname: adminUser.surname,
+				extension_name: adminUser.extension_name,
 				email: adminUser.email,
-				permissions: [...adminUser.permissions],
+				password: "",
+				confirm_password: "",
 			})
 		}
 	}
@@ -530,7 +588,15 @@ export function AdminDashboard() {
 	const closeAdminModal = () => {
 		setAdminModalType(null)
 		setSelectedAdmin(null)
-		setAdminFormData({ name: "", email: "", permissions: [] })
+		setAdminFormData({
+			first_name: "",
+			middle_name: "",
+			surname: "",
+			extension_name: "",
+			email: "",
+			password: "",
+			confirm_password: "",
+		})
 		setFormErrors({})
 		setIsLoading(false)
 	}
@@ -538,8 +604,11 @@ export function AdminDashboard() {
 	const validateAdminForm = () => {
 		const errors = {}
 
-		if (!adminFormData.name.trim()) {
-			errors.name = "Name is required"
+		if (!adminFormData.first_name.trim()) {
+			errors.first_name = "First name is required"
+		}
+		if (!adminFormData.surname.trim()) {
+			errors.surname = "Surname is required"
 		}
 
 		if (!adminFormData.email.trim()) {
@@ -548,17 +617,16 @@ export function AdminDashboard() {
 			errors.email = "Please enter a valid email address"
 		}
 
-		if (adminFormData.permissions.length === 0) {
-			errors.permissions = "At least one permission must be selected"
+		if (!adminFormData.password.trim()) {
+			errors.password = "Password is required"
+		} else if (adminFormData.password.length < 6) {
+			errors.password = "Password must be at least 6 characters long"
 		}
 
-		// Check for duplicate email (except when editing the same user)
-		const existingAdmin = adminUsers.find(
-			(admin) =>
-				admin.email === adminFormData.email && admin.id !== selectedAdmin?.id,
-		)
-		if (existingAdmin) {
-			errors.email = "An admin with this email already exists"
+		if (!adminFormData.confirm_password.trim()) {
+			errors.confirm_password = "Confirm password is required"
+		} else if (adminFormData.password !== adminFormData.confirm_password) {
+			errors.confirm_password = "Passwords do not match"
 		}
 
 		setFormErrors(errors)
@@ -568,18 +636,18 @@ export function AdminDashboard() {
 	const handleAdminAction = async () => {
 		if (!adminModalType) return
 
-		if (adminModalType === "delete") {
-			setIsLoading(true)
-			// Mock API call
-			await new Promise((resolve) => setTimeout(resolve, 1000))
+		// if (adminModalType === "delete") {
+		// 	setIsLoading(true)
+		// 	// Mock API call
+		// 	await new Promise((resolve) => setTimeout(resolve, 1000))
 
-			setAdminUsers((prev) =>
-				prev.filter((admin) => admin.id !== selectedAdmin.id),
-			)
-			alert(`Admin "${selectedAdmin.name}" has been deleted successfully!`)
-			closeAdminModal()
-			return
-		}
+		// 	setAdminUsers((prev) =>
+		// 		prev.filter((admin) => admin.id !== selectedAdmin.id),
+		// 	)
+		// 	alert(`Admin "${selectedAdmin.name}" has been deleted successfully!`)
+		// 	closeAdminModal()
+		// 	return
+		// }
 
 		if (!validateAdminForm()) return
 
@@ -588,24 +656,28 @@ export function AdminDashboard() {
 		await new Promise((resolve) => setTimeout(resolve, 1500))
 
 		if (adminModalType === "add") {
-			const newAdmin = {
-				id: `admin${Date.now()}`,
-				...adminFormData,
-				role: "admin",
-				createdAt: new Date(),
+			try {
+				const result = await addAdmin({ ...adminFormData })
+
+				if (result.success) {
+					toast.success(result.message || "Admin added successfully")
+				} else {
+					toast.error(result.error || "Adding admin failed")
+				}
+			} catch (err) {
+				toast.error(err.message || "Adding admin failed")
 			}
-			setAdminUsers((prev) => [...prev, newAdmin])
-			alert(`Admin "${adminFormData.name}" has been added successfully!`)
-		} else if (adminModalType === "edit") {
-			setAdminUsers((prev) =>
-				prev.map((admin) =>
-					admin.id === selectedAdmin.id
-						? { ...admin, ...adminFormData }
-						: admin,
-				),
-			)
-			alert(`Admin "${adminFormData.name}" has been updated successfully!`)
 		}
+		// else if (adminModalType === "edit") {
+		// 	setAdminUsers((prev) =>
+		// 		prev.map((admin) =>
+		// 			admin.id === selectedAdmin.id
+		// 				? { ...admin, ...adminFormData }
+		// 				: admin,
+		// 		),
+		// 	)
+		// 	alert(`Admin "${adminFormData.name}" has been updated successfully!`)
+		// }
 
 		closeAdminModal()
 	}
@@ -882,7 +954,7 @@ export function AdminDashboard() {
 					</Card>
 				</TabsContent>
 
-				{/* <TabsContent value="users" className="space-y-4">
+				<TabsContent value="users" className="space-y-4">
 					<Card>
 						<CardHeader>
 							<CardTitle>User Management</CardTitle>
@@ -893,7 +965,7 @@ export function AdminDashboard() {
 						<CardContent>
 							<div className="flex justify-between items-center mb-4">
 								<h3 className="text-lg font-semibold">
-									Admin Users ({adminUsers.length})
+									Admin Users ({adminApplication.length})
 								</h3>
 								<Button onClick={() => openAdminModal("add")}>
 									<UserPlus className="h-4 w-4 mr-2" />
@@ -902,7 +974,7 @@ export function AdminDashboard() {
 							</div>
 
 							<div className="space-y-3">
-								{adminUsers.map((adminUser) => (
+								{adminApplication.map((adminUser) => (
 									<div
 										key={adminUser.id}
 										className="flex items-center justify-between p-4 border rounded-lg"
@@ -911,16 +983,19 @@ export function AdminDashboard() {
 											<div className="flex items-center gap-3 mb-2">
 												<Shield className="h-5 w-5 text-blue-500" />
 												<div>
-													<h4 className="font-medium">{adminUser.name}</h4>
+													<h4 className="font-medium">
+														{adminUser.first_name} {adminUser.surname}
+													</h4>
 													<p className="text-sm text-muted-foreground">
 														{adminUser.email}
 													</p>
 													<p className="text-xs text-muted-foreground">
-														Created: {adminUser.createdAt.toLocaleDateString()}
+														Created:{" "}
+														{format(new Date(adminUser.created_at), "PPP")}
 													</p>
 												</div>
 											</div>
-											<div className="flex flex-wrap gap-1 mt-2">
+											{/* <div className="flex flex-wrap gap-1 mt-2">
 												{adminUser.permissions.map((permission) => (
 													<Badge
 														key={permission}
@@ -930,7 +1005,7 @@ export function AdminDashboard() {
 														{getPermissionBadge(permission)}
 													</Badge>
 												))}
-											</div>
+											</div> */}
 										</div>
 										<div className="flex items-center space-x-2">
 											<Button
@@ -956,7 +1031,7 @@ export function AdminDashboard() {
 							</div>
 						</CardContent>
 					</Card>
-				</TabsContent> */}
+				</TabsContent>
 
 				{/* <TabsContent value="reports" className="space-y-4">
 					<Card>
@@ -1321,7 +1396,7 @@ export function AdminDashboard() {
 				</DialogContent>
 			</Dialog>
 
-			{/* <Dialog open={adminModalType !== null} onOpenChange={closeAdminModal}>
+			<Dialog open={adminModalType !== null} onOpenChange={closeAdminModal}>
 				<DialogContent className="max-w-2xl">
 					{adminModalType === "add" && (
 						<>
@@ -1339,30 +1414,105 @@ export function AdminDashboard() {
 							<div className="space-y-4">
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div>
-										<Label htmlFor="admin-name">Full Name *</Label>
+										<Label htmlFor={adminFirstNameId} className="mb-3">
+											First Name *
+										</Label>
 										<Input
-											id="admin-name"
-											placeholder="Enter admin's full name"
-											value={adminFormData.name}
+											id={adminFirstNameId}
+											placeholder="Enter admin's first name"
+											value={adminFormData.first_name}
 											onChange={(e) =>
 												setAdminFormData((prev) => ({
 													...prev,
-													name: e.target.value,
+													first_name: e.target.value,
 												}))
 											}
-											className={formErrors.name ? "border-red-300" : ""}
+											className={formErrors.first_name ? "border-red-300" : ""}
 										/>
-										{formErrors.name && (
+										{formErrors.first_name && (
 											<p className="text-sm text-red-500 mt-1">
-												{formErrors.name}
+												{formErrors.first_name}
 											</p>
 										)}
 									</div>
 
 									<div>
-										<Label htmlFor="admin-email">Email Address *</Label>
+										<Label htmlFor={adminMiddleNameId} className="mb-3">
+											Middle Name
+										</Label>
 										<Input
-											id="admin-email"
+											id={adminMiddleNameId}
+											placeholder="Enter admin's middle name"
+											value={adminFormData.middle_name}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													middle_name: e.target.value,
+												}))
+											}
+											className={formErrors.middle_name ? "border-red-300" : ""}
+										/>
+										{formErrors.middle_name && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.middle_name}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Label htmlFor={adminSurnameId} className="mb-3">
+											Surname *
+										</Label>
+										<Input
+											id={adminSurnameId}
+											placeholder="Enter admin's surname"
+											value={adminFormData.surname}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													surname: e.target.value,
+												}))
+											}
+											className={formErrors.surname ? "border-red-300" : ""}
+										/>
+										{formErrors.surname && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.surname}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Label htmlFor={adminExtensionNameId} className="mb-3">
+											Extension Name
+										</Label>
+										<Input
+											id={adminExtensionNameId}
+											placeholder="Enter admin's extension name"
+											value={adminFormData.extension_name}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													extension_name: e.target.value,
+												}))
+											}
+											className={
+												formErrors.extension_name ? "border-red-300" : ""
+											}
+										/>
+										{formErrors.extension_name && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.extension_name}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Label htmlFor={adminEmailId} className="mb-3">
+											Email Address *
+										</Label>
+										<Input
+											id={adminEmailId}
 											type="email"
 											placeholder="admin@university.edu"
 											value={adminFormData.email}
@@ -1380,47 +1530,56 @@ export function AdminDashboard() {
 											</p>
 										)}
 									</div>
-								</div>
 
-								<div>
-									<Label className="text-base font-medium">Permissions *</Label>
-									<p className="text-sm text-muted-foreground mb-3">
-										Select the permissions this admin should have access to.
-									</p>
-									<div className="space-y-3">
-										{availablePermissions.map((permission) => (
-											<div
-												key={permission.id}
-												className="flex items-start space-x-3 p-3 border rounded-lg"
-											>
-												<Checkbox
-													id={permission.id}
-													checked={adminFormData.permissions.includes(
-														permission.id,
-													)}
-													onCheckedChange={(checked) =>
-														handlePermissionChange(permission.id, checked)
-													}
-												/>
-												<div className="flex-1">
-													<Label
-														htmlFor={permission.id}
-														className="font-medium cursor-pointer"
-													>
-														{permission.label}
-													</Label>
-													<p className="text-sm text-muted-foreground">
-														{permission.description}
-													</p>
-												</div>
-											</div>
-										))}
+									<div>
+										<Label htmlFor={adminPasswordId} className="mb-3">
+											Password *
+										</Label>
+										<Input
+											id={adminPasswordId}
+											type="password"
+											placeholder="Enter password"
+											value={adminFormData.password}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													password: e.target.value,
+												}))
+											}
+											className={formErrors.password ? "border-red-300" : ""}
+										/>
+										{formErrors.password && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.password}
+											</p>
+										)}
 									</div>
-									{formErrors.permissions && (
-										<p className="text-sm text-red-500 mt-1">
-											{formErrors.permissions}
-										</p>
-									)}
+
+									<div>
+										<Label htmlFor={adminConfirmPasswordId} className="mb-3">
+											Confirm Password *
+										</Label>
+										<Input
+											id={adminConfirmPasswordId}
+											type="password"
+											placeholder="Confirm password"
+											value={adminFormData.confirm_password}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													confirm_password: e.target.value,
+												}))
+											}
+											className={
+												formErrors.confirm_password ? "border-red-300" : ""
+											}
+										/>
+										{formErrors.confirm_password && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.confirm_password}
+											</p>
+										)}
+									</div>
 								</div>
 							</div>
 
@@ -1453,7 +1612,7 @@ export function AdminDashboard() {
 						</>
 					)}
 
-					{adminModalType === "edit" && selectedAdmin && (
+					{/* {adminModalType === "edit" && selectedAdmin && (
 						<>
 							<DialogHeader>
 								<DialogTitle className="flex items-center gap-2">
@@ -1580,9 +1739,9 @@ export function AdminDashboard() {
 								</Button>
 							</div>
 						</>
-					)}
+					)} */}
 
-					{adminModalType === "delete" && selectedAdmin && (
+					{/* {adminModalType === "delete" && selectedAdmin && (
 						<>
 							<DialogHeader>
 								<DialogTitle className="flex items-center gap-2">
@@ -1669,9 +1828,9 @@ export function AdminDashboard() {
 								</Button>
 							</div>
 						</>
-					)}
+					)} */}
 				</DialogContent>
-			</Dialog> */}
+			</Dialog>
 		</div>
 	)
 }

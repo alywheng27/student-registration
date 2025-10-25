@@ -2,6 +2,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { AuthProvider } from "@/lib/auth"
 import "./globals.css"
+import { Inter } from "next/font/google"
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata = {
 	title: "Student Registration System",
@@ -18,6 +20,7 @@ export default function RootLayout({ children }) {
 				<Suspense fallback={<div>Loading...</div>}>
 					<AuthProvider>{children}</AuthProvider>
 				</Suspense>
+				<Toaster />
 				<Analytics />
 			</body>
 		</html>
