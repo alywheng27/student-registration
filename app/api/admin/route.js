@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 
 export async function POST(request) {
-	console.log("✅ Admin registration request received.")
+	console.log("[ADMIN] ✅ Admin registration request received.")
 	try {
 		const formData = await request.formData()
 		const first_name = formData.get("first_name")
@@ -11,7 +11,7 @@ export async function POST(request) {
 		const extension_name = formData.get("extension_name")
 		const email = formData.get("email")
 		const password = formData.get("password")
-		console.log("📝 Form data parsed:", {
+		console.log("[ADMIN] 📝 Form data parsed:", {
 			first_name,
 			middle_name,
 			surname,
@@ -21,7 +21,7 @@ export async function POST(request) {
 		})
 
 		if (!email || !first_name || !surname || !password) {
-			console.log("❌ Validation failed: Missing required fields.")
+			console.log("[ADMIN] ❌ Validation failed: Missing required fields.")
 			return NextResponse.json(
 				{ error: "First name, surname, email, and password are required." },
 				{ status: 400 },
@@ -43,10 +43,13 @@ export async function POST(request) {
 			},
 		})
 		if (error) {
-			console.error("❌ Supabase signUp error:", error.message)
+			console.error("[ADMIN] ❌ Supabase signUp error:", error.message)
 			return NextResponse.json({ error: error.message }, { status: 401 })
 		}
-		console.log("✅ Supabase signUp successful for user ID:", data.user.id)
+		console.log(
+			"[ADMIN] ✅ Supabase signUp successful for user ID:",
+			data.user.id,
+		)
 
 		const adminProfile = {
 			uid: data.user.id,
@@ -55,28 +58,31 @@ export async function POST(request) {
 			surname,
 			extension_name,
 		}
-		console.log("Attempting to insert admin profile:", adminProfile)
+		console.log("[ADMIN] Attempting to insert admin profile:", adminProfile)
 
 		const { error: adminError } = await supabase
 			.from("Admins")
 			.insert(adminProfile)
 
 		if (adminError) {
-			console.error("❌ Failed to create admin profile:", adminError.message)
+			console.error(
+				"[ADMIN] ❌ Failed to create admin profile:",
+				adminError.message,
+			)
 			return NextResponse.json(
 				{ error: adminError.message || "Failed to create admin profile." },
 				{ status: 400 },
 			)
 		}
 
-		console.log("✅ Admin profile created successfully.")
+		console.log("[ADMIN] ✅ Admin profile created successfully.")
 		return NextResponse.json({
 			success: true,
 			message: `Admin ${first_name} ${surname} has been added successfully!`,
 		})
 	} catch (error) {
 		console.error(
-			"❌ Unexpected error during admin registration:",
+			"[ADMIN] ❌ Unexpected error during admin registration:",
 			error.message,
 		)
 		return NextResponse.json(

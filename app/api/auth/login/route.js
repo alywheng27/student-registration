@@ -2,19 +2,19 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/utils/supabase/server"
 
 export async function POST(request) {
-	console.log("🚀 Starting login process...")
+	console.log("[LOGIN] 🚀 Starting login process...")
 
 	try {
 		// Parse JSON request body
-		console.log("📝 Parsing request JSON...")
+		console.log("[LOGIN] 📝 Parsing request JSON...")
 		const { email, password } = await request.json()
 
-		console.log("📋 Login data extracted")
+		console.log("[LOGIN] 📋 Login data extracted")
 
 		// Validate required fields
-		console.log("🔍 Validating required fields...")
+		console.log("[LOGIN] 🔍 Validating required fields...")
 		if (!email || !password) {
-			console.error("❌ Validation failed - missing required fields:", {
+			console.error("[LOGIN] ❌ Validation failed - missing required fields:", {
 				email: !!email,
 				password: !!password,
 			})
@@ -23,32 +23,32 @@ export async function POST(request) {
 				{ status: 400 },
 			)
 		}
-		console.log("✅ All required fields validated")
+		console.log("[LOGIN] ✅ All required fields validated")
 
-		console.log("🔗 Creating Supabase client...")
+		console.log("[LOGIN] 🔗 Creating Supabase client...")
 		const supabase = await createClient()
 
 		// Authenticate user with Supabase Auth
-		console.log("👤 Authenticating user with Supabase Auth...")
+		console.log("[LOGIN] 👤 Authenticating user with Supabase Auth...")
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email,
 			password,
 		})
 
 		if (error) {
-			console.error("❌ Supabase Auth login error:", error)
+			console.error("[LOGIN] ❌ Supabase Auth login error:", error)
 			return NextResponse.json({ error: error.message }, { status: 401 })
 		}
 
-		console.log("✅ User authenticated successfully")
+		console.log("[LOGIN] ✅ User authenticated successfully")
 
 		const responseData = {
 			user: data.user,
 			session: data.session,
 		}
 
-		console.log("🎉 Login process completed successfully")
-		console.log("📤 Sending response:", {
+		console.log("[LOGIN] 🎉 Login process completed successfully")
+		console.log("[LOGIN] 📤 Sending response:", {
 			userId: responseData.user?.id,
 			hasSession: !!responseData.session,
 			sessionExpiry: responseData.session?.expires_at,
@@ -57,8 +57,8 @@ export async function POST(request) {
 		// Optionally, you can return the user/session info
 		return NextResponse.json(responseData)
 	} catch (error) {
-		console.error("💥 Unexpected error during login:", error)
-		console.error("📊 Error details:", {
+		console.error("[LOGIN] 💥 Unexpected error during login:", error)
+		console.error("[LOGIN] 📊 Error details:", {
 			message: error.message,
 			stack: error.stack,
 			name: error.name,
@@ -71,11 +71,11 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
-	console.log("🚀 Starting login process...")
+	console.log("[LOGIN] 🚀 Starting login process...")
 
 	try {
 		// Parse FormData instead of JSON to handle file uploads
-		console.log("📝 Parsing FormData...")
+		console.log("[LOGIN] 📝 Parsing FormData...")
 		const formData = await request.formData()
 
 		const email = formData.get("email")
@@ -83,12 +83,12 @@ export async function PUT(request) {
 		const currentPassword = formData.get("currentPassword")
 		const newPassword = formData.get("newPassword")
 
-		console.log("📋 Login data extracted")
+		console.log("[LOGIN] 📋 Login data extracted")
 
 		// Validate required fields
-		console.log("🔍 Validating required fields...")
+		console.log("[LOGIN] 🔍 Validating required fields...")
 		if (!currentPassword || !newPassword) {
-			console.error("❌ Validation failed - missing required fields:", {
+			console.error("[LOGIN] ❌ Validation failed - missing required fields:", {
 				currentPassword: !!currentPassword,
 				newPassword: !!newPassword,
 			})
@@ -97,20 +97,20 @@ export async function PUT(request) {
 				{ status: 400 },
 			)
 		}
-		console.log("✅ All required fields validated")
+		console.log("[LOGIN] ✅ All required fields validated")
 
-		console.log("🔗 Creating Supabase client...")
+		console.log("[LOGIN] 🔗 Creating Supabase client...")
 		const supabase = await createClient()
 
 		// Authenticate user with Supabase Auth
-		console.log("👤 Checking user with Supabase Auth...")
+		console.log("[LOGIN] 👤 Checking user with Supabase Auth...")
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email,
 			password: currentPassword,
 		})
 
 		if (error) {
-			console.error("❌ Supabase check login error:", error.code)
+			console.error("[LOGIN] ❌ Supabase check login error:", error.code)
 			if (error.code === "invalid_credentials") {
 				return NextResponse.json(
 					{ error: "Invalid current password. Please try again." },
@@ -121,39 +121,42 @@ export async function PUT(request) {
 			}
 		}
 
-		console.log("✅ User current password checked successfully")
+		console.log("[LOGIN] ✅ User current password checked successfully")
 
-		console.log("💾 Updating password...")
+		console.log("[LOGIN] 💾 Updating password...")
 		const { data: updatedUser, error: errorUpdatedUser } =
 			await supabase.auth.updateUser({
 				password: newPassword,
 			})
 
 		if (errorUpdatedUser) {
-			console.error("❌ Error when updating password:", errorUpdatedUser)
+			console.error(
+				"[LOGIN] ❌ Error when updating password:",
+				errorUpdatedUser,
+			)
 			return NextResponse.json(
 				{ error: errorUpdatedUser.message },
 				{ status: 401 },
 			)
 		}
 
-		console.log("✅ Password updated successfully!")
+		console.log("[LOGIN] ✅ Password updated successfully!")
 
 		const responseData = {
 			data: updatedUser,
 			message: "Your password has been successfully changed.",
 		}
 
-		console.log("🎉 Update password completed successfully")
-		console.log("📤 Sending response:", {
+		console.log("[LOGIN] 🎉 Update password completed successfully")
+		console.log("[LOGIN] 📤 Sending response:", {
 			data: responseData.data,
 			message: responseData.message,
 		})
 
 		return NextResponse.json(responseData)
 	} catch (error) {
-		console.error("💥 Unexpected error during login:", error)
-		console.error("📊 Error details:", {
+		console.error("[LOGIN] 💥 Unexpected error during login:", error)
+		console.error("[LOGIN] 📊 Error details:", {
 			message: error.message,
 			stack: error.stack,
 			name: error.name,
