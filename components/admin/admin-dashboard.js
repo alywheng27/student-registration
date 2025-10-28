@@ -66,7 +66,7 @@ import {
 } from "@/lib/student_info"
 
 export function AdminDashboard() {
-	const { user, userRole, addAdmin, updateAdmin } = useAuth()
+	const { user, userRole, addAdmin, updateAdmin, deleteAdmin } = useAuth()
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState("all")
 
@@ -302,22 +302,44 @@ export function AdminDashboard() {
 		// Mock export functionality
 		const csvContent = [
 			[
-				"Name",
-				"Email",
 				"Student ID",
+				"First Name",
+				"Surname",
+				"Email",
 				"Status",
+				"Step",
 				"Submitted Date",
 				"Documents",
 				"Missing Documents",
 			],
 			...filteredApplications.map((app) => [
-				app.studentName,
+				app.uid,
+				app.first_name,
+				app.surname,
 				app.email,
-				app.studentId,
-				app.status,
-				app.submittedAt,
-				app.documents.join("; "),
-				app.missingDocuments.join("; "),
+				app.applicationStatus,
+				app.currentStep,
+				app.created_at,
+				app.documents
+					.map((doc) => {
+						if (doc.type !== "") {
+							return doc.type
+						} else {
+							return null
+						}
+					})
+					.filter(Boolean) // Filter out null and empty strings
+					.join("; "),
+				app.missingDocuments
+					.map((doc) => {
+						if (doc.type !== "") {
+							return doc.type
+						} else {
+							return null
+						}
+					})
+					.filter(Boolean) // Filter out null and empty strings
+					.join("; "),
 			]),
 		]
 			.map((row) => row.join(","))
@@ -482,18 +504,26 @@ export function AdminDashboard() {
 	const handleAdminAction = async () => {
 		if (!adminModalType) return
 
-		// if (adminModalType === "delete") {
-		// 	setIsLoading(true)
-		// 	// Mock API call
-		// 	await new Promise((resolve) => setTimeout(resolve, 1000))
+		if (adminModalType === "delete") {
+			setIsLoading(true)
+			// Mock API call
+			await new Promise((resolve) => setTimeout(resolve, 1000))
 
-		// 	setAdminUsers((prev) =>
-		// 		prev.filter((admin) => admin.id !== selectedAdmin.id),
-		// 	)
-		// 	alert(`Admin "${selectedAdmin.name}" has been deleted successfully!`)
-		// 	closeAdminModal()
-		// 	return
-		// }
+			try {
+				const result = await deleteAdmin(selectedAdmin.uid)
+
+				if (result.success) {
+					toast.success(result.message || "Admin deleted successfully")
+				} else {
+					toast.error(result.error || "deleting admin failed")
+				}
+			} catch (err) {
+				toast.error(err.message || "deleting admin failed")
+			}
+
+			closeAdminModal()
+			return
+		}
 
 		if (!validateAdminForm(adminModalType)) return
 
@@ -648,7 +678,7 @@ export function AdminDashboard() {
 				<TabsList>
 					<TabsTrigger value="applications">Applications</TabsTrigger>
 					<TabsTrigger value="users">User Management</TabsTrigger>
-					<TabsTrigger value="reports">Reports</TabsTrigger>
+					{/* <TabsTrigger value="reports">Reports</TabsTrigger> */}
 				</TabsList>
 
 				<TabsContent value="applications" className="space-y-4">
@@ -1514,7 +1544,7 @@ export function AdminDashboard() {
 						</>
 					)}
 
-					{/* {adminModalType === "delete" && selectedAdmin && (
+					{adminModalType === "delete" && selectedAdmin && (
 						<>
 							<DialogHeader>
 								<DialogTitle className="flex items-center gap-2">
@@ -1541,21 +1571,12 @@ export function AdminDashboard() {
 										<div className="flex items-center gap-3">
 											<Shield className="h-8 w-8 text-red-500" />
 											<div>
-												<h4 className="font-semibold">{selectedAdmin.name}</h4>
+												<h4 className="font-semibold">
+													{selectedAdmin.first_name} {selectedAdmin.surname}
+												</h4>
 												<p className="text-sm text-muted-foreground">
 													{selectedAdmin.email}
 												</p>
-												<div className="flex flex-wrap gap-1 mt-2">
-													{selectedAdmin.permissions.map((permission) => (
-														<Badge
-															key={permission}
-															variant="secondary"
-															className="text-xs"
-														>
-															{getPermissionBadge(permission)}
-														</Badge>
-													))}
-												</div>
 											</div>
 										</div>
 									</CardContent>
@@ -1567,7 +1588,6 @@ export function AdminDashboard() {
 									</h4>
 									<ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
 										<li>• Immediate loss of system access</li>
-										<li>• All permissions will be revoked</li>
 										<li>• Account cannot be recovered</li>
 										<li>• Any ongoing work may be affected</li>
 									</ul>
@@ -1601,7 +1621,7 @@ export function AdminDashboard() {
 								</Button>
 							</div>
 						</>
-					)} */}
+					)}
 				</DialogContent>
 			</Dialog>
 		</div>

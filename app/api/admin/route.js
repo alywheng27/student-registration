@@ -187,3 +187,80 @@ export async function PUT(request) {
 		)
 	}
 }
+
+export async function DELETE(request) {
+	console.log("[ADMIN] ⚡ Admin delete request received.")
+	try {
+		const formData = await request.formData()
+		const id = formData.get("id")
+		console.log("[ADMIN] 📝 Form data (delete) parsed:", { id })
+
+		if (!id) {
+			console.log("[ADMIN] ❌ Validation failed on delete: missing id.")
+			return NextResponse.json(
+				{ error: "ID is required for admin deletion." },
+				{ status: 400 },
+			)
+		}
+
+		const supabase = await createClient()
+
+		const { error: deleteError } = await supabase
+			.from("Admins")
+			.delete()
+			.eq("uid", id)
+
+		if (deleteError) {
+			console.error(
+				"[ADMIN] ❌ Failed to delete admin profile:",
+				deleteError.message,
+			)
+			return NextResponse.json(
+				{
+					error: deleteError.message || "Failed to delete admin profile.",
+				},
+				{ status: 400 },
+			)
+		}
+
+		// SECOND: Delete from Auth users table
+		console.log(
+			"[ADMIN] ⚡ Attempting to delete user from Supabase Auth users table...",
+		)
+		const { error: userDeleteError } = await supabase.auth.admin.deleteUser(id)
+		if (userDeleteError) {
+			console.error(
+				"[ADMIN] ❌ Failed to delete auth user:",
+				userDeleteError.message,
+			)
+			return NextResponse.json(
+				{
+					error:
+						userDeleteError.message ||
+						"Failed to delete user from Supabase Auth.",
+				},
+				{ status: 400 },
+			)
+		}
+		console.log("[ADMIN] ✅ Auth user deleted successfully.")
+
+		console.log("[ADMIN] ✅ Admin profile deleted successfully.")
+		return NextResponse.json({
+			success: true,
+			message: `Admin has been deleted successfully!`,
+		})
+	} catch (error) {
+		console.error(
+			"[ADMIN] ❌ Unexpected error during admin deletion:",
+			error.message,
+		)
+		return NextResponse.json(
+			{
+				error:
+					error.message ||
+					"An unexpected error occurred during admin deletion.",
+			},
+			{ status: 500 },
+		)
+	}
+}
