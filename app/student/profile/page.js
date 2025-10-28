@@ -20,7 +20,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useId, useMemo, useState } from "react"
-import { Toaster, toast } from "sonner"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
 	Card,
@@ -457,19 +457,6 @@ export default function ProfilePage() {
 			</header>
 			<main className="container mx-auto sm:px-4 lg:px-[10%] py-8">
 				<div className="container mx-auto space-y-6">
-					<Toaster
-						position="bottom-right"
-						toastOptions={{
-							unstyled: true,
-							classNames: {
-								toast:
-									"flex align-items-center border rounded-lg space-x-3 px-5 py-3 text-sm",
-								error: "border-red-500 text-red-700",
-								success: "border-green-500 text-green-700",
-								info: "border-blue-500 text-blue-700",
-							},
-						}}
-					/>
 					<div className="flex items-center gap-4">
 						<div>
 							<h1 className="text-3xl font-bold text-foreground">

@@ -95,3 +95,95 @@ export async function POST(request) {
 		)
 	}
 }
+
+export async function PUT(request) {
+	console.log("[ADMIN] ⚡ Admin update request received.")
+	try {
+		const formData = await request.formData()
+		const id = formData.get("id")
+		const first_name = formData.get("first_name")
+		const middle_name = formData.get("middle_name")
+		const surname = formData.get("surname")
+		const extension_name = formData.get("extension_name")
+		const email = formData.get("email")
+		const password = formData.get("password")
+		console.log("[ADMIN] 📝 Form data (update) parsed:", {
+			id,
+			first_name,
+			middle_name,
+			surname,
+			extension_name,
+			email,
+			// password is not logged
+		})
+
+		if (!id || !first_name || !surname) {
+			console.log("[ADMIN] ❌ Validation failed on update: missing id/fields.")
+			return NextResponse.json(
+				{ error: "ID, first name, and surname are required for update." },
+				{ status: 400 },
+			)
+		}
+
+		const supabase = await createClient()
+
+		const { error: updateError } = await supabase
+			.from("Admins")
+			.update({
+				first_name,
+				middle_name,
+				surname,
+				extension_name,
+			})
+			.eq("uid", id)
+
+		if (updateError) {
+			console.error(
+				"[ADMIN] ❌ Failed to update admin profile:",
+				updateError.message,
+			)
+			return NextResponse.json(
+				{ error: updateError.message || "Failed to update admin profile." },
+				{ status: 400 },
+			)
+		}
+
+		// Optionally update the user's password if provided
+		if (password !== "") {
+			console.log("[ADMIN] 🔐 Attempting to update auth password...")
+			const { data: updatedUser, error: errorUpdatedUser } =
+				await supabase.auth.updateUser({
+					password: password,
+				})
+			if (errorUpdatedUser) {
+				console.error(
+					"[ADMIN] ❌ Error when updating password:",
+					errorUpdatedUser,
+				)
+				return NextResponse.json(
+					{ error: errorUpdatedUser.message },
+					{ status: 401 },
+				)
+			}
+			console.log("[ADMIN] ✅ Password updated for user.")
+		}
+
+		console.log("[ADMIN] ✅ Admin profile updated successfully.")
+		return NextResponse.json({
+			success: true,
+			message: `Admin ${first_name} ${surname} has been updated successfully!`,
+		})
+	} catch (error) {
+		console.error(
+			"[ADMIN] ❌ Unexpected error during admin update:",
+			error.message,
+		)
+		return NextResponse.json(
+			{
+				error:
+					error.message || "An unexpected error occurred during admin update.",
+			},
+			{ status: 500 },
+		)
+	}
+}

@@ -65,175 +65,8 @@ import {
 	getUserWithoutId,
 } from "@/lib/student_info"
 
-const mockApplications = [
-	{
-		id: "1",
-		studentName: "John Doe",
-		email: "john@example.com",
-		phone: "+1 (555) 123-4567",
-		address: "123 Main St, Springfield, IL 62701",
-		studentId: "STU001",
-		status: "pending",
-		submittedAt: "2024-01-15",
-		documents: ["ID Document", "Transcript"],
-		missingDocuments: ["Birth Certificate"],
-		detailedDocuments: [
-			{
-				name: "Government ID",
-				type: "id",
-				status: "pending",
-				uploadedAt: "2024-01-15",
-			},
-			{
-				name: "Academic Transcript",
-				type: "transcript",
-				status: "pending",
-				uploadedAt: "2024-01-15",
-			},
-		],
-	},
-	{
-		id: "2",
-		studentName: "Jane Smith",
-		email: "jane@example.com",
-		phone: "+1 (555) 234-5678",
-		address: "456 Oak Ave, Springfield, IL 62702",
-		studentId: "STU002",
-		status: "incomplete",
-		submittedAt: "2024-01-14",
-		documents: ["ID Document"],
-		missingDocuments: ["Transcript", "Birth Certificate"],
-		detailedDocuments: [
-			{
-				name: "Government ID",
-				type: "id",
-				status: "approved",
-				uploadedAt: "2024-01-14",
-			},
-		],
-	},
-	{
-		id: "3",
-		studentName: "Mike Johnson",
-		email: "mike@example.com",
-		phone: "+1 (555) 345-6789",
-		address: "789 Pine St, Springfield, IL 62703",
-		studentId: "STU003",
-		status: "approved",
-		submittedAt: "2024-01-13",
-		documents: ["ID Document", "Transcript", "Birth Certificate"],
-		missingDocuments: [],
-		detailedDocuments: [
-			{
-				name: "Government ID",
-				type: "id",
-				status: "approved",
-				uploadedAt: "2024-01-13",
-			},
-			{
-				name: "Academic Transcript",
-				type: "transcript",
-				status: "approved",
-				uploadedAt: "2024-01-13",
-			},
-			{
-				name: "Birth Certificate",
-				type: "birth_certificate",
-				status: "approved",
-				uploadedAt: "2024-01-13",
-			},
-		],
-	},
-	{
-		id: "4",
-		studentName: "Sarah Wilson",
-		email: "sarah@example.com",
-		phone: "+1 (555) 456-7890",
-		address: "321 Elm St, Springfield, IL 62704",
-		studentId: "STU004",
-		status: "rejected",
-		submittedAt: "2024-01-12",
-		documents: ["ID Document", "Transcript"],
-		missingDocuments: [],
-		detailedDocuments: [
-			{
-				name: "Government ID",
-				type: "id",
-				status: "rejected",
-				uploadedAt: "2024-01-12",
-			},
-			{
-				name: "Academic Transcript",
-				type: "transcript",
-				status: "rejected",
-				uploadedAt: "2024-01-12",
-			},
-		],
-	},
-]
-
-const mockAdminUsers = [
-	{
-		id: "admin1",
-		name: "Admin User",
-		email: "admin@university.edu",
-		role: "admin",
-		permissions: [
-			"manage_applications",
-			"manage_users",
-			"view_reports",
-			"export_data",
-		],
-		createdAt: new Date("2024-01-01"),
-	},
-	{
-		id: "admin2",
-		name: "John Smith",
-		email: "john.smith@university.edu",
-		role: "admin",
-		permissions: ["manage_applications", "view_reports"],
-		createdAt: new Date("2024-01-15"),
-	},
-	{
-		id: "admin3",
-		name: "Sarah Johnson",
-		email: "sarah.johnson@university.edu",
-		role: "admin",
-		permissions: ["manage_applications", "manage_users"],
-		createdAt: new Date("2024-02-01"),
-	},
-]
-
-const availablePermissions = [
-	{
-		id: "manage_applications",
-		label: "Manage Applications",
-		description: "Review and process student applications",
-	},
-	{
-		id: "manage_users",
-		label: "Manage Users",
-		description: "Add, edit, and remove admin users",
-	},
-	{
-		id: "view_reports",
-		label: "View Reports",
-		description: "Access analytics and generate reports",
-	},
-	{
-		id: "export_data",
-		label: "Export Data",
-		description: "Export application and user data",
-	},
-	{
-		id: "system_settings",
-		label: "System Settings",
-		description: "Configure system-wide settings",
-	},
-]
-
 export function AdminDashboard() {
-	const { user, userRole, addAdmin } = useAuth()
+	const { user, userRole, addAdmin, updateAdmin } = useAuth()
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState("all")
 
@@ -245,6 +78,7 @@ export function AdminDashboard() {
 	const [adminModalType, setAdminModalType] = useState(null)
 	const [selectedAdmin, setSelectedAdmin] = useState(null)
 	const [adminFormData, setAdminFormData] = useState({
+		uid: "",
 		first_name: "",
 		middle_name: "",
 		surname: "",
@@ -253,7 +87,7 @@ export function AdminDashboard() {
 		password: "",
 		confirm_password: "",
 	})
-	const [adminUsers, setAdminUsers] = useState(mockAdminUsers)
+	// const [adminUsers, setAdminUsers] = useState(mockAdminUsers)
 	const [formErrors, setFormErrors] = useState(null)
 	const [profiles, setProfiles] = useState([])
 	const [addresses, setAddresses] = useState([])
@@ -271,6 +105,14 @@ export function AdminDashboard() {
 	const adminEmailId = useId()
 	const adminPasswordId = useId()
 	const adminConfirmPasswordId = useId()
+
+	const updateAdminFirstNameId = useId()
+	const updateAdminMiddleNameId = useId()
+	const updateAdminSurnameId = useId()
+	const updateAdminExtensionNameId = useId()
+	const updateAdminEmailId = useId()
+	const updateAdminPasswordId = useId()
+	const updateAdminConfirmPasswordId = useId()
 
 	const DOCUMENT_COUNT = 3
 
@@ -396,7 +238,6 @@ export function AdminDashboard() {
 					email: usr ? usr.email : "N/A",
 				}
 			})
-			console.log(combineData)
 			setAdminApplication(combineData)
 		}
 	}, [admins, users])
@@ -564,6 +405,7 @@ export function AdminDashboard() {
 
 		if (type === "add") {
 			setAdminFormData({
+				uid: "",
 				first_name: "",
 				middle_name: "",
 				surname: "",
@@ -574,11 +416,12 @@ export function AdminDashboard() {
 			})
 		} else if (type === "edit" && adminUser) {
 			setAdminFormData({
-				first_name: adminUser.name,
-				middle_name: adminUser.middle_name,
-				surname: adminUser.surname,
-				extension_name: adminUser.extension_name,
-				email: adminUser.email,
+				uid: adminUser.uid || "",
+				first_name: adminUser.first_name || "",
+				middle_name: adminUser.middle_name || "",
+				surname: adminUser.surname || "",
+				extension_name: adminUser.extension_name || "",
+				email: adminUser.email || "",
 				password: "",
 				confirm_password: "",
 			})
@@ -589,6 +432,7 @@ export function AdminDashboard() {
 		setAdminModalType(null)
 		setSelectedAdmin(null)
 		setAdminFormData({
+			uid: "",
 			first_name: "",
 			middle_name: "",
 			surname: "",
@@ -601,7 +445,7 @@ export function AdminDashboard() {
 		setIsLoading(false)
 	}
 
-	const validateAdminForm = () => {
+	const validateAdminForm = (adminModalType) => {
 		const errors = {}
 
 		if (!adminFormData.first_name.trim()) {
@@ -617,16 +461,18 @@ export function AdminDashboard() {
 			errors.email = "Please enter a valid email address"
 		}
 
-		if (!adminFormData.password.trim()) {
-			errors.password = "Password is required"
-		} else if (adminFormData.password.length < 6) {
-			errors.password = "Password must be at least 6 characters long"
-		}
+		if (adminModalType !== "edit") {
+			if (!adminFormData.password.trim()) {
+				errors.password = "Password is required"
+			} else if (adminFormData.password.length < 6) {
+				errors.password = "Password must be at least 6 characters long"
+			}
 
-		if (!adminFormData.confirm_password.trim()) {
-			errors.confirm_password = "Confirm password is required"
-		} else if (adminFormData.password !== adminFormData.confirm_password) {
-			errors.confirm_password = "Passwords do not match"
+			if (!adminFormData.confirm_password.trim()) {
+				errors.confirm_password = "Confirm password is required"
+			} else if (adminFormData.password !== adminFormData.confirm_password) {
+				errors.confirm_password = "Passwords do not match"
+			}
 		}
 
 		setFormErrors(errors)
@@ -649,7 +495,7 @@ export function AdminDashboard() {
 		// 	return
 		// }
 
-		if (!validateAdminForm()) return
+		if (!validateAdminForm(adminModalType)) return
 
 		setIsLoading(true)
 		// Mock API call
@@ -667,17 +513,19 @@ export function AdminDashboard() {
 			} catch (err) {
 				toast.error(err.message || "Adding admin failed")
 			}
+		} else if (adminModalType === "edit") {
+			try {
+				const result = await updateAdmin({ ...adminFormData })
+
+				if (result.success) {
+					toast.success(result.message || "Admin updated successfully")
+				} else {
+					toast.error(result.error || "Updating admin failed")
+				}
+			} catch (err) {
+				toast.error(err.message || "Updating admin failed")
+			}
 		}
-		// else if (adminModalType === "edit") {
-		// 	setAdminUsers((prev) =>
-		// 		prev.map((admin) =>
-		// 			admin.id === selectedAdmin.id
-		// 				? { ...admin, ...adminFormData }
-		// 				: admin,
-		// 		),
-		// 	)
-		// 	alert(`Admin "${adminFormData.name}" has been updated successfully!`)
-		// }
 
 		closeAdminModal()
 	}
@@ -1457,12 +1305,13 @@ export function AdminDashboard() {
 						</>
 					)}
 
-					{/* {adminModalType === "edit" && selectedAdmin && (
+					{adminModalType === "edit" && selectedAdmin && (
 						<>
 							<DialogHeader>
 								<DialogTitle className="flex items-center gap-2">
 									<Edit className="h-5 w-5 text-blue-500" />
-									Edit Admin - {selectedAdmin.name}
+									Edit Admin - {selectedAdmin.first_name}{" "}
+									{selectedAdmin.surname}
 								</DialogTitle>
 								<DialogDescription>
 									Update admin account information and permissions.
@@ -1472,30 +1321,97 @@ export function AdminDashboard() {
 							<div className="space-y-4">
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div>
-										<Label htmlFor="edit-admin-name">Full Name *</Label>
+										<Label htmlFor={updateAdminFirstNameId}>First Name *</Label>
 										<Input
-											id="edit-admin-name"
-											placeholder="Enter admin's full name"
-											value={adminFormData.name}
+											id={updateAdminFirstNameId}
+											placeholder="Enter admin's first name"
+											value={adminFormData.first_name}
 											onChange={(e) =>
 												setAdminFormData((prev) => ({
 													...prev,
-													name: e.target.value,
+													first_name: e.target.value,
 												}))
 											}
-											className={formErrors.name ? "border-red-300" : ""}
+											className={formErrors.first_name ? "border-red-300" : ""}
 										/>
-										{formErrors.name && (
+										{formErrors.first_name && (
 											<p className="text-sm text-red-500 mt-1">
-												{formErrors.name}
+												{formErrors.first_name}
 											</p>
 										)}
 									</div>
 
 									<div>
-										<Label htmlFor="edit-admin-email">Email Address *</Label>
+										<Label htmlFor={updateAdminMiddleNameId}>Middle Name</Label>
 										<Input
-											id="edit-admin-email"
+											id={updateAdminMiddleNameId}
+											placeholder="Enter admin's middle name"
+											value={adminFormData.middle_name}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													middle_name: e.target.value,
+												}))
+											}
+											className={formErrors.middle_name ? "border-red-300" : ""}
+										/>
+										{formErrors.middle_name && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.middle_name}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Label htmlFor={updateAdminSurnameId}>Surname *</Label>
+										<Input
+											id={updateAdminSurnameId}
+											placeholder="Enter admin's surname"
+											value={adminFormData.surname}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													surname: e.target.value,
+												}))
+											}
+											className={formErrors.surname ? "border-red-300" : ""}
+										/>
+										{formErrors.surname && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.surname}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Label htmlFor={updateAdminExtensionNameId}>
+											Extension Name
+										</Label>
+										<Input
+											id={updateAdminExtensionNameId}
+											placeholder="Enter admin's extension name"
+											value={adminFormData.extension_name}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													extension_name: e.target.value,
+												}))
+											}
+											className={
+												formErrors.extension_name ? "border-red-300" : ""
+											}
+										/>
+										{formErrors.extension_name && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.extension_name}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<Label htmlFor={updateAdminEmailId}>Email Address *</Label>
+										<Input
+											id={updateAdminEmailId}
 											type="email"
 											placeholder="admin@university.edu"
 											value={adminFormData.email}
@@ -1513,47 +1429,59 @@ export function AdminDashboard() {
 											</p>
 										)}
 									</div>
-								</div>
 
-								<div>
-									<Label className="text-base font-medium">Permissions *</Label>
-									<p className="text-sm text-muted-foreground mb-3">
-										Update the permissions for this admin account.
-									</p>
-									<div className="space-y-3">
-										{availablePermissions.map((permission) => (
-											<div
-												key={permission.id}
-												className="flex items-start space-x-3 p-3 border rounded-lg"
-											>
-												<Checkbox
-													id={`edit-${permission.id}`}
-													checked={adminFormData.permissions.includes(
-														permission.id,
-													)}
-													onCheckedChange={(checked) =>
-														handlePermissionChange(permission.id, checked)
-													}
-												/>
-												<div className="flex-1">
-													<Label
-														htmlFor={`edit-${permission.id}`}
-														className="font-medium cursor-pointer"
-													>
-														{permission.label}
-													</Label>
-													<p className="text-sm text-muted-foreground">
-														{permission.description}
-													</p>
-												</div>
-											</div>
-										))}
+									<div>
+										<Label htmlFor={updateAdminPasswordId} className="mb-3">
+											Password *
+										</Label>
+										<Input
+											id={updateAdminPasswordId}
+											type="password"
+											placeholder="Enter password"
+											value={adminFormData.password}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													password: e.target.value,
+												}))
+											}
+											className={formErrors.password ? "border-red-300" : ""}
+										/>
+										{formErrors.password && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.password}
+											</p>
+										)}
 									</div>
-									{formErrors.permissions && (
-										<p className="text-sm text-red-500 mt-1">
-											{formErrors.permissions}
-										</p>
-									)}
+
+									<div>
+										<Label
+											htmlFor={updateAdminConfirmPasswordId}
+											className="mb-3"
+										>
+											Confirm Password *
+										</Label>
+										<Input
+											id={updateAdminConfirmPasswordId}
+											type="password"
+											placeholder="Confirm password"
+											value={adminFormData.confirm_password}
+											onChange={(e) =>
+												setAdminFormData((prev) => ({
+													...prev,
+													confirm_password: e.target.value,
+												}))
+											}
+											className={
+												formErrors.confirm_password ? "border-red-300" : ""
+											}
+										/>
+										{formErrors.confirm_password && (
+											<p className="text-sm text-red-500 mt-1">
+												{formErrors.confirm_password}
+											</p>
+										)}
+									</div>
 								</div>
 							</div>
 
@@ -1584,7 +1512,7 @@ export function AdminDashboard() {
 								</Button>
 							</div>
 						</>
-					)} */}
+					)}
 
 					{/* {adminModalType === "delete" && selectedAdmin && (
 						<>
