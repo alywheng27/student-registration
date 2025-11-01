@@ -815,7 +815,7 @@ export function AdminDashboard() {
 												<Eye className="h-4 w-4 mr-1" />
 												View Details
 											</Button>
-											<Link href={`/admin/workflow/${application.id}`}>
+											<Link href={`/admin/workflow/${application.uid}`}>
 												<Button
 													size="sm"
 													className="bg-purple-600 hover:bg-purple-700"
