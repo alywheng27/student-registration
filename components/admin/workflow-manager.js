@@ -1,18 +1,23 @@
 "use client"
 
+import { format } from "date-fns"
 import {
 	Award,
 	Calendar,
 	CheckCircle,
+	Church,
 	Clock,
 	FileText,
-	Mail,
+	Flag,
+	Heart,
+	Home,
 	MapPin,
 	Phone,
 	Play,
 	User,
 	XCircle,
 } from "lucide-react"
+import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -35,7 +40,12 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth"
-import { getApplication, getProfile } from "@/lib/student_info"
+import {
+	getAddress,
+	getApplication,
+	getDocuments,
+	getProfile,
+} from "@/lib/student_info"
 import {
 	createApplicationWorkflow,
 	getOverallStatus,
@@ -51,25 +61,23 @@ export function WorkflowManager({ applicationId, studentName }) {
 	const [showActionDialog, setShowActionDialog] = useState(false)
 	const [pendingAction, setPendingAction] = useState(null)
 	const [profile, setProfile] = useState({})
+	const [address, setAddress] = useState({})
+	const [documents, setDocuments] = useState({})
 	const [application, setApplication] = useState({})
 	const [progress, setProgress] = useState()
 	const [overallStatus, setOverallStatus] = useState()
-
-	const profileData = useCallback(async () => {
-		const data = await getProfile(applicationId)
-		setProfile(data)
-	}, [applicationId])
-
-	const applicationData = useCallback(async () => {
-		const data = await getApplication(applicationId)
-		setApplication(data)
-	}, [applicationId])
 
 	useEffect(() => {
 		const fetchData = async () => {
 			// Fetch profile and application data
 			const profileResult = await getProfile(applicationId)
 			setProfile(profileResult)
+
+			const addressResult = await getAddress(applicationId)
+			setAddress(addressResult)
+
+			const documentResult = await getDocuments(applicationId)
+			setDocuments(documentResult)
 
 			const applicationResult = await getApplication(applicationId)
 			setApplication(applicationResult)
@@ -88,6 +96,33 @@ export function WorkflowManager({ applicationId, studentName }) {
 
 		fetchData()
 	}, [applicationId])
+
+	const documentMap = [
+		{
+			id: "birth-certificate",
+			name: "Birth Certificate",
+			link: documents.birth_certificate,
+			created_at: documents.created_at,
+			description: "Verify the student's birth certificate",
+			required: true,
+		},
+		{
+			id: "good-moral",
+			name: "Good Moral",
+			link: documents.good_moral,
+			created_at: documents.created_at,
+			description: "Verify the student's good moral certificate",
+			required: true,
+		},
+		{
+			id: "grade-card",
+			name: "Grade Card",
+			link: documents.grade_card,
+			created_at: documents.created_at,
+			description: "Verify the student's grade card",
+			required: true,
+		},
+	]
 
 	const handleStepAction = (step, action) => {
 		setSelectedStep(step)
@@ -113,7 +148,15 @@ export function WorkflowManager({ applicationId, studentName }) {
 		setPendingAction(null)
 		setActionNotes("")
 
-		const status = newStatus === 'rejected' ? 4 :selectedStep.id === 'final-review' ? 3 : 2
+		const status =
+			newStatus === "rejected" ? 4 : selectedStep.id === "final-review" ? 3 : 2
+
+		const statusName =
+			status === 2 ? "in-progress" : status === 3 ? "approved" : "rejected"
+		setOverallStatus(statusName)
+
+		const progressResult = await getWorkflowProgress(updatedWorkflow)
+		setProgress(progressResult)
 
 		// In real app, this would update the database
 		try {
@@ -223,14 +266,23 @@ export function WorkflowManager({ applicationId, studentName }) {
 			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle className="text-xl">
-								Application Review Workflow
-							</CardTitle>
-							<CardDescription>
-								Student: {profile?.first_name} {profile?.surname} | Application
-								ID: {applicationId}
-							</CardDescription>
+						<div className="flex items-center gap-3">
+							<div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+								<img
+									src={profile?.photo_url} // Replace with actual profile image URL
+									alt="Profile Avatar"
+									className="h-full w-full object-cover"
+								/>
+							</div>
+							<div>
+								<CardTitle className="text-xl">
+									Application Review Workflow
+								</CardTitle>
+								<CardDescription>
+									Student: {profile?.first_name} {profile?.surname} |
+									Application ID: {applicationId}
+								</CardDescription>
+							</div>
 						</div>
 						{overallStatus && (
 							<Badge
@@ -292,161 +344,168 @@ export function WorkflowManager({ applicationId, studentName }) {
 							<div className="space-y-4">
 								{step.status === "in-progress" && (
 									<div className="space-y-4 border-t pt-4">
-										{/* <h4 className="font-semibold text-sm flex items-center gap-2">
+										<h4 className="font-semibold text-sm flex items-center gap-2">
 											<FileText className="h-4 w-4" />
 											Review Information
-										</h4> */}
+										</h4>
 
 										{/* Student Information */}
-										{/* <Card className="bg-muted/50">
-											<CardHeader className="pb-3">
-												<CardTitle className="text-sm flex items-center gap-2">
-													<User className="h-4 w-4" />
-													Student Information
-												</CardTitle>
-											</CardHeader>
-											<CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-												<div>
-													<label className="text-muted-foreground">
-														Full Name
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.studentInfo.name}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground">
-														Student ID
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.studentInfo.studentId}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground flex items-center gap-1">
-														<Mail className="h-3 w-3" />
-														Email
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.studentInfo.email}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground flex items-center gap-1">
-														<Phone className="h-3 w-3" />
-														Phone
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.studentInfo.phone}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground flex items-center gap-1">
-														<Calendar className="h-3 w-3" />
-														Date of Birth
-													</label>
-													<p className="font-medium">
-														{new Date(
-															mockApplicationData.studentInfo.dateOfBirth,
-														).toLocaleDateString()}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground flex items-center gap-1">
-														<MapPin className="h-3 w-3" />
-														Address
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.studentInfo.address}
-													</p>
-												</div>
-											</CardContent>
-										</Card> */}
+										{step?.id === "eligibility-check" && (
+											<Card className="bg-muted/50">
+												<CardHeader className="pb-3">
+													<CardTitle className="text-sm flex items-center gap-2">
+														<User className="h-4 w-4" />
+														Student Information
+													</CardTitle>
+												</CardHeader>
+												<CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+													<div>
+														<span className="text-muted-foreground">Name</span>
+														<p className="font-medium">
+															{profile?.first_name}{" "}
+															{profile?.middle_name?.charAt(0)}.{" "}
+															{profile?.surname}
+														</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<Phone className="h-3 w-3" />
+															Phone
+														</span>
+														<p className="font-medium">{profile?.phone}</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<Calendar className="h-3 w-3" />
+															Date of Birth
+														</span>
+														<p className="font-medium">
+															{profile?.date_of_birth}
+														</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<MapPin className="h-3 w-3" />
+															Address
+														</span>
+														<p className="font-medium">
+															{address?.barangay}, {address?.municipality},{" "}
+															{address?.province}
+														</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<Church className="h-3 w-3" />
+															Religion
+														</span>
+														<p className="font-medium">{profile?.religion}</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<Flag className="h-3 w-3" />
+															Citizenship
+														</span>
+														<p className="font-medium">
+															{profile?.citizenship}
+														</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<Home className="h-3 w-3" />
+															Place of Birth
+														</span>
+														<p className="font-medium">
+															{profile?.place_of_birth}
+														</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<User className="h-3 w-3" />
+															Sex
+														</span>
+														<p className="font-medium">{profile?.Sex?.sex}</p>
+													</div>
+													<div>
+														<span className="text-muted-foreground flex items-center gap-1">
+															<Heart className="h-3 w-3" />
+															Civil Status
+														</span>
+														<p className="font-medium">
+															{profile?.Civil_Status?.civil_status}
+														</p>
+													</div>
+												</CardContent>
+											</Card>
+										)}
 
 										{/* Documents Section */}
-										{/* <Card className="bg-muted/50">
-											<CardHeader className="pb-3">
-												<CardTitle className="text-sm flex items-center gap-2">
-													<FileText className="h-4 w-4" />
-													Submitted Documents
-												</CardTitle>
-											</CardHeader>
-											<CardContent className="space-y-2">
-												{mockApplicationData.documents.map((doc) => (
-													<div
-														key={doc.id}
-														className="flex items-center justify-between p-3 bg-background rounded-lg"
-													>
-														<div className="flex items-center gap-3">
-															<FileText className="h-4 w-4 text-muted-foreground" />
-															<div>
-																<p className="font-medium text-sm">
-																	{doc.name}
-																</p>
-																<p className="text-xs text-muted-foreground">
-																	Uploaded:{" "}
-																	{doc.uploadedAt.toLocaleDateString()} •{" "}
-																	{doc.fileName}
-																</p>
+										{step?.id === "document-verification" && (
+											<Card className="bg-muted/50">
+												<CardHeader className="pb-3">
+													<CardTitle className="text-sm flex items-center gap-2">
+														<FileText className="h-4 w-4" />
+														Submitted Documents
+													</CardTitle>
+												</CardHeader>
+												<CardContent className="space-y-2">
+													{documentMap.map((doc) => (
+														<div
+															key={doc.id}
+															className="flex items-center justify-between p-3 bg-background rounded-lg"
+														>
+															<div className="flex items-center gap-3">
+																<FileText className="h-4 w-4 text-muted-foreground" />
+																<div>
+																	<p className="font-medium text-sm">
+																		{doc.name}
+																	</p>
+																	<p className="text-xs text-muted-foreground">
+																		Uploaded:{" "}
+																		{format(
+																			new Date(doc.created_at),
+																			"MM/dd/yyyy",
+																		)}
+																	</p>
+																</div>
+															</div>
+															<div className="flex items-center gap-2">
+																{/* {getDocumentStatusBadge(doc.status)} */}
+																<Link href={doc.link} target="_blank">
+																	<Button size="sm" variant="outline">
+																		View
+																	</Button>
+																</Link>
 															</div>
 														</div>
-														<div className="flex items-center gap-2">
-															{getDocumentStatusBadge(doc.status)}
-															<Button size="sm" variant="outline">
-																View
-															</Button>
-														</div>
-													</div>
-												))}
-											</CardContent>
-										</Card> */}
+													))}
+												</CardContent>
+											</Card>
+										)}
 
 										{/* Application Details */}
-										{/* <Card className="bg-muted/50">
-											<CardHeader className="pb-3">
-												<CardTitle className="text-sm flex items-center gap-2">
-													<Award className="h-4 w-4" />
-													Application Details
-												</CardTitle>
-											</CardHeader>
-											<CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-												<div>
-													<label className="text-muted-foreground">
-														Program
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.applicationDetails.program}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground">
-														Semester
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.applicationDetails.semester}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground">
-														Previous Education
-													</label>
-													<p className="font-medium">
-														{
-															mockApplicationData.applicationDetails
-																.previousEducation
-														}
-													</p>
-												</div>
-												<div>
-													<label className="text-muted-foreground">
-														Submitted Date
-													</label>
-													<p className="font-medium">
-														{mockApplicationData.applicationDetails.submittedAt.toLocaleDateString()}
-													</p>
-												</div>
-											</CardContent>
-										</Card> */}
+										{step?.id === "eligibility-check" && (
+											<Card className="bg-muted/50">
+												<CardHeader className="pb-3">
+													<CardTitle className="text-sm flex items-center gap-2">
+														<Award className="h-4 w-4" />
+														Application Details
+													</CardTitle>
+												</CardHeader>
+												<CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+													<div>
+														<span className="text-muted-foreground">
+															Submitted Date
+														</span>
+														<p className="font-medium">
+															{format(
+																new Date(profile?.created_at),
+																"MM/dd/yyyy",
+															)}
+														</p>
+													</div>
+												</CardContent>
+											</Card>
+										)}
 									</div>
 								)}
 
@@ -526,26 +585,25 @@ export function WorkflowManager({ applicationId, studentName }) {
 					</DialogHeader>
 					<div className="space-y-4">
 						<div>
-						{
-							pendingAction === "reject" && (
+							{pendingAction === "reject" && (
 								<>
-								<span className="text-sm font-medium mb-2 block">
-									Notes {pendingAction === "reject" ? "(Required)" : "(Optional)"}
-								</span>
-						
-								<Textarea
-									placeholder={
-										pendingAction === "approve"
-											? "Add any notes about this approval..."
-											: "Please explain why this step is being rejected..."
-									}
-									value={actionNotes}
-									onChange={(e) => setActionNotes(e.target.value)}
-									rows={3}
-								/>
-							</>	
-							)
-						}
+									<span className="text-sm font-medium mb-2 block">
+										Notes{" "}
+										{pendingAction === "reject" ? "(Required)" : "(Optional)"}
+									</span>
+
+									<Textarea
+										placeholder={
+											pendingAction === "approve"
+												? "Add any notes about this approval..."
+												: "Please explain why this step is being rejected..."
+										}
+										value={actionNotes}
+										onChange={(e) => setActionNotes(e.target.value)}
+										rows={3}
+									/>
+								</>
+							)}
 						</div>
 						<div className="flex justify-end space-x-2">
 							<Button

@@ -61,7 +61,10 @@ import {
 	getAdminWithoutId,
 	getApplicationWithoutId,
 	getDocumentsWithoutId,
+	getEmergencyContactWithoutId,
+	getParentsWithoutId,
 	getProfileWithoutId,
+	getSchoolAttendedWithoutId,
 	getUserWithoutId,
 } from "@/lib/student_info"
 
@@ -91,6 +94,9 @@ export function AdminDashboard() {
 	const [formErrors, setFormErrors] = useState(null)
 	const [profiles, setProfiles] = useState([])
 	const [addresses, setAddresses] = useState([])
+	const [schoolAttended, setSchoolAttended] = useState([])
+	const [emergencyContacts, setEmergencyContacts] = useState([])
+	const [parents, setParents] = useState([])
 	const [applications, setApplications] = useState([])
 	const [documents, setDocuments] = useState([])
 	const [users, setUsers] = useState([])
@@ -126,6 +132,21 @@ export function AdminDashboard() {
 		setAddresses(data)
 	}, [])
 
+	const schoolAttendedData = useCallback(async () => {
+		const data = await getSchoolAttendedWithoutId()
+		setSchoolAttended(data)
+	}, [])
+
+	const parentsData = useCallback(async () => {
+		const data = await getParentsWithoutId()
+		setParents(data)
+	}, [])
+
+	const emergencyContactData = useCallback(async () => {
+		const data = await getEmergencyContactWithoutId()
+		setEmergencyContacts(data)
+	}, [])
+
 	const applicationData = useCallback(async () => {
 		const data = await getApplicationWithoutId()
 		setApplications(data)
@@ -149,6 +170,9 @@ export function AdminDashboard() {
 	useEffect(() => {
 		profileData()
 		addressData()
+		schoolAttendedData()
+		parentsData()
+		emergencyContactData()
 		applicationData()
 		documentData()
 		userData()
@@ -156,6 +180,9 @@ export function AdminDashboard() {
 	}, [
 		profileData,
 		addressData,
+		schoolAttendedData,
+		parentsData,
+		emergencyContactData,
 		applicationData,
 		documentData,
 		userData,
@@ -165,6 +192,9 @@ export function AdminDashboard() {
 	const profileApplicationData = useCallback(() => {
 		if (profiles.length > 0 && applications.length > 0) {
 			const combinedData = profiles.map((p) => {
+				const sch = schoolAttended?.find((s) => s.uid === p.uid)
+				const apr = parents?.find((pe) => pe.uid === p.uid)
+				const eme = emergencyContacts?.find((e) => e.uid === p.uid)
 				const usr = users?.users?.find((u) => u.id === p.uid)
 				const doc = documents?.find((d) => d.uid === p.uid)
 				const add = addresses?.find((a) => a.uid === p.uid)
@@ -177,12 +207,20 @@ export function AdminDashboard() {
 					barangay: add ? add.barangay : "N/A",
 					municipality: add ? add.municipality : "N/A",
 					province: add ? add.province : "N/A",
+					...sch,
+					...apr,
+					emergency_name: eme ? eme.name : "N/A",
+					emergency_relationship: eme ? eme.relationship : "N/A",
+					emergency_address: eme ? eme.home_address : "N/A",
+					emergency_phone: eme ? eme.phone : "N/A",
 					progress:
-						app.Steps.step === "Document Verification"
-							? Math.round((1 / DOCUMENT_COUNT) * 100)
-							: app.Steps.step === "Eligibility Check"
+						app.Status.status === "Approved"
+							? Math.round((3 / DOCUMENT_COUNT) * 100)
+							: app.Steps.step === "Final Review"
 								? Math.round((2 / DOCUMENT_COUNT) * 100)
-								: Math.round((3 / DOCUMENT_COUNT) * 100),
+								: app.Steps.step === "Eligibility Check"
+									? Math.round((1 / DOCUMENT_COUNT) * 100)
+									: Math.round((0 / DOCUMENT_COUNT) * 100),
 					documents: [
 						{
 							type: doc?.birth_certificate ? "Birth Certificate" : "",
@@ -287,14 +325,16 @@ export function AdminDashboard() {
 
 	const getStatusBadge = (status) => {
 		switch (status) {
-			case "approved":
+			case "Approved":
 				return <Badge className="bg-green-500">Approved</Badge>
-			case "rejected":
+			case "Rejected":
 				return <Badge variant="destructive">Rejected</Badge>
-			case "incomplete":
+			case "Incomplete":
 				return <Badge className="bg-yellow-500">Incomplete</Badge>
+			case "In Progress":
+				return <Badge className="bg-blue-500">In Progress</Badge>
 			default:
-				return <Badge className="bg-blue-500">Pending</Badge>
+				return <Badge className="bg-gray-500">Pending</Badge>
 		}
 	}
 
@@ -306,6 +346,36 @@ export function AdminDashboard() {
 				"First Name",
 				"Surname",
 				"Email",
+				"Phone",
+				"Religion",
+				"Citizenship",
+				"Place of Birth",
+				"Sex",
+				"Civil Status",
+				"Region",
+				"Barangay",
+				"Municipality",
+				"Province",
+				"Elementary School",
+				"Elementary School Address",
+				"Elementary Year Graduated",
+				"Junior High School",
+				"Junior High School Address",
+				"Junior High Year Graduated",
+				"Senior High School",
+				"Senior High School Address",
+				"Senior High Year Graduated",
+				"Father Name",
+				"Father Occupation",
+				"Father Educational Attainment",
+				"Mother Name",
+				"Mother Occupation",
+				"Mother Educational Attainment",
+				"Monthly Income",
+				"Emergency Name",
+				"Emergency Relationship",
+				"Emergency Address",
+				"Emergency Phone",
 				"Status",
 				"Step",
 				"Submitted Date",
@@ -317,6 +387,36 @@ export function AdminDashboard() {
 				app.first_name,
 				app.surname,
 				app.email,
+				app.phone,
+				app.religion,
+				app.citizenship,
+				app.place_of_birth,
+				app.Sex.sex,
+				app.Civil_Status.civil_status,
+				app.Regions.region,
+				app.barangay,
+				app.municipality,
+				app.province,
+				app.elementary,
+				app.elementary_address,
+				app.elementary_year_graduated,
+				app.junior_high,
+				app.junior_high_address,
+				app.junior_high_year_graduated,
+				app.senior_high,
+				app.senior_high_address,
+				app.senior_high_year_graduated,
+				app.father_name,
+				app.father_occupation,
+				app.father_educational_attainment,
+				app.mother_name,
+				app.mother_occupation,
+				app.mother_educational_attainment,
+				app.monthly_income,
+				app.emergency_name,
+				app.emergency_relationship,
+				app.emergency_address,
+				app.emergency_phone,
 				app.applicationStatus,
 				app.currentStep,
 				app.created_at,
@@ -342,10 +442,13 @@ export function AdminDashboard() {
 					.join("; "),
 			]),
 		]
-			.map((row) => row.join(","))
+			.map((row) => row.join("|"))
 			.join("\n")
 
-		const blob = new Blob([csvContent], { type: "text/csv" })
+		const finalCsvContent = `SEP=|\n${csvContent}`
+		const blob = new Blob([finalCsvContent], {
+			type: "text/csv;charset=utf-8,",
+		})
 		const url = window.URL.createObjectURL(blob)
 		const a = document.createElement("a")
 		a.href = url
@@ -727,6 +830,14 @@ export function AdminDashboard() {
 												<div>
 													{getStatusIcon(application.applicationStatus)}
 												</div>
+												{/* Profile Image */}
+												<div className=" h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+													<img
+														src={application.photo_url} // Replace with actual profile image URL
+														alt="Profile Avatar"
+														className="h-full w-full object-cover"
+													/>
+												</div>
 												<div>
 													<h4 className="font-semibold text-lg">
 														{application.first_name} {application.surname}
@@ -740,7 +851,7 @@ export function AdminDashboard() {
 												</div>
 											</div>
 											<div className="text-right">
-												{getStatusBadge(application.status)}
+												{getStatusBadge(application.applicationStatus)}
 												<p className="text-xs text-muted-foreground mt-1">
 													Submitted:{" "}
 													{format(new Date(application.created_at), "PPP")}
@@ -761,6 +872,7 @@ export function AdminDashboard() {
 															return null
 														}
 													})}
+													<li>--- Nothing follows --- </li>
 												</ul>
 											</div>
 											{application.missingDocuments.length > 0 && (
@@ -776,6 +888,7 @@ export function AdminDashboard() {
 																return null
 															}
 														})}
+														<li>--- Nothing follows --- </li>
 													</ul>
 												</div>
 											)}
@@ -1010,46 +1123,61 @@ export function AdminDashboard() {
 
 									<Card>
 										<CardHeader>
-											<CardTitle className="text-lg">
-												Application Status
-											</CardTitle>
+											<CardTitle className="text-lg">Student Photo</CardTitle>
 										</CardHeader>
 										<CardContent className="space-y-3">
-											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">
-													Current Status:
-												</span>
-												{getStatusBadge(selectedApplication.applicationStatus)}
-											</div>
-											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">
-													Uploaded Documents:
-												</span>
-												<span className="text-sm">
-													{
-														selectedApplication?.documents?.filter(
-															(d) => d !== "",
-														)?.length
-													}{" "}
-													uploaded
-												</span>
-											</div>
-											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium">
-													Missing Documents:
-												</span>
-												<span className="text-sm">
-													{
-														selectedApplication?.missingDocuments?.filter(
-															(d) => d !== "",
-														)?.length
-													}{" "}
-													missing
-												</span>
+											<div className="w-[60%] mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden">
+												<img
+													src={selectedApplication.photo_url} // Replace with actual profile image URL
+													alt="Profile Avatar"
+													className="h-full w-full object-cover"
+												/>
 											</div>
 										</CardContent>
 									</Card>
 								</div>
+
+								<Card>
+									<CardHeader>
+										<CardTitle className="text-lg">
+											Application Status
+										</CardTitle>
+									</CardHeader>
+									<CardContent className="space-y-3">
+										<div className="flex items-center gap-2">
+											<span className="text-sm font-medium">
+												Current Status:
+											</span>
+											{getStatusBadge(selectedApplication.applicationStatus)}
+										</div>
+										<div className="flex items-center gap-2">
+											<span className="text-sm font-medium">
+												Uploaded Documents:
+											</span>
+											<span className="text-sm">
+												{
+													selectedApplication?.documents?.filter(
+														(d) => d !== "",
+													)?.length
+												}{" "}
+												uploaded
+											</span>
+										</div>
+										<div className="flex items-center gap-2">
+											<span className="text-sm font-medium">
+												Missing Documents:
+											</span>
+											<span className="text-sm">
+												{
+													selectedApplication?.missingDocuments?.filter(
+														(d) => d === "",
+													)?.length
+												}{" "}
+												missing
+											</span>
+										</div>
+									</CardContent>
+								</Card>
 
 								<Card>
 									<CardHeader>
@@ -1075,7 +1203,7 @@ export function AdminDashboard() {
 																</div>
 															</div>
 															<div className="flex items-center gap-2">
-																{getDocumentStatusBadge(doc.status)}
+																{/* {getDocumentStatusBadge(doc.status)} */}
 																<Link href={doc.name} target="_blank">
 																	<Button size="sm" variant="outline">
 																		<Eye className="h-4 w-4 mr-1" />
