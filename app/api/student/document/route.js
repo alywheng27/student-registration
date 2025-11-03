@@ -15,6 +15,21 @@ export async function PUT(request) {
 		// Requirements
 		const document = formData.get("document")
 
+		if (!id || !type || !document) {
+			console.error(
+				"[DOCUMENT] ❌ Validation failed - missing required fields:",
+				{
+					id: !!id,
+					type: !!type,
+					document: !!document,
+				},
+			)
+			return NextResponse.json(
+				{ error: "ID, type, document are required" },
+				{ status: 400 },
+			)
+		}
+
 		console.log("[DOCUMENT] 📋 Form data extracted")
 
 		console.log("[DOCUMENT] 🔗 Creating Supabase client...")

@@ -105,7 +105,6 @@ export async function PUT(request) {
 		const middle_name = formData.get("middle_name")
 		const surname = formData.get("surname")
 		const extension_name = formData.get("extension_name")
-		const email = formData.get("email")
 		const password = formData.get("password")
 		console.log("[ADMIN] 📝 Form data (update) parsed:", {
 			id,
@@ -113,7 +112,6 @@ export async function PUT(request) {
 			middle_name,
 			surname,
 			extension_name,
-			email,
 			// password is not logged
 		})
 
@@ -151,10 +149,9 @@ export async function PUT(request) {
 		// Optionally update the user's password if provided
 		if (password !== "") {
 			console.log("[ADMIN] 🔐 Attempting to update auth password...")
-			const { data: updatedUser, error: errorUpdatedUser } =
-				await supabase.auth.updateUser({
-					password: password,
-				})
+			const { error: errorUpdatedUser } = await supabase.auth.updateUser({
+				password: password,
+			})
 			if (errorUpdatedUser) {
 				console.error(
 					"[ADMIN] ❌ Error when updating password:",

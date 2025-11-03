@@ -86,7 +86,23 @@ export async function POST(request) {
 
 		// Validate required fields
 		console.log("[REGISTER] 🔍 Validating required fields...")
-		if (!email || !password || !first_name || !surname) {
+		if (
+			!email ||
+			!password ||
+			!first_name ||
+			!surname ||
+			!phone ||
+			!date_of_birth ||
+			!place_of_birth ||
+			!religion ||
+			!citizenship ||
+			!sex ||
+			!civil_status ||
+			!region ||
+			!barangay ||
+			!municipality ||
+			!province
+		) {
 			console.error(
 				"[REGISTER] ❌ Validation failed - missing required fields:",
 				{
@@ -94,10 +110,24 @@ export async function POST(request) {
 					password: !!password,
 					first_name: !!first_name,
 					surname: !!surname,
+					phone: !!phone,
+					date_of_birth: !!date_of_birth,
+					place_of_birth: !!place_of_birth,
+					religion: !!religion,
+					citizenship: !!citizenship,
+					sex: !!sex,
+					civil_status: !!civil_status,
+					region: !!region,
+					barangay: !!barangay,
+					municipality: !!municipality,
+					province: !!province,
 				},
 			)
 			return NextResponse.json(
-				{ error: "Email, password, first name, and surname are required." },
+				{
+					error:
+						"Email, password, first name, surname, phone, date of birth, place of birth, religion, citizenship, sex, civil status, region, barangay, municipality, province are required.",
+				},
 				{ status: 400 },
 			)
 		}
@@ -549,16 +579,46 @@ export async function PUT(request) {
 
 		// Validate required fields
 		console.log("[REGISTER] 🔍 Validating required fields...")
-		if (!first_name || !surname) {
+		if (
+			!uid ||
+			!first_name ||
+			!surname ||
+			!phone ||
+			!date_of_birth ||
+			!place_of_birth ||
+			!religion ||
+			!citizenship ||
+			!sex ||
+			!civil_status ||
+			!region ||
+			!barangay ||
+			!municipality ||
+			!province
+		) {
 			console.error(
 				"[REGISTER] ❌ Validation failed - missing required fields:",
 				{
+					uid: !!uid,
 					first_name: !!first_name,
 					surname: !!surname,
+					phone: !!phone,
+					date_of_birth: !!date_of_birth,
+					place_of_birth: !!place_of_birth,
+					religion: !!religion,
+					citizenship: !!citizenship,
+					sex: !!sex,
+					civil_status: !!civil_status,
+					region: !!region,
+					barangay: !!barangay,
+					municipality: !!municipality,
+					province: !!province,
 				},
 			)
 			return NextResponse.json(
-				{ error: "First name, and surname are required." },
+				{
+					error:
+						"UID, first name, surname, phone, date of birth, place of birth, religion, citizenship, sex, civil status, region, barangay, municipality, province are required.",
+				},
 				{ status: 400 },
 			)
 		}

@@ -531,7 +531,7 @@ export function DocumentUpload({ onUploadComplete }) {
 										</div>
 									</div>
 									<div className="flex items-center space-x-2">
-										{getStatusBadge(status)}
+										{/* {getStatusBadge(status)} */}
 										<Button
 											size="sm"
 											variant="outline"
