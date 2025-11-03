@@ -3,8 +3,6 @@
 import {
 	AlertCircle,
 	Check,
-	CircleAlert,
-	CircleCheck,
 	CircleDashed,
 	Eye,
 	File,
@@ -17,6 +15,7 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -57,9 +56,6 @@ export function DocumentUpload({ onUploadComplete }) {
 	const [profile, setProfile] = useState()
 	const [uploading, setUploading] = useState(false)
 	const [uploadProgress, setUploadProgress] = useState(0)
-	const [error, setError] = useState("")
-	const [documentSuccess, setDocumentSuccess] = useState(null)
-	const [documentError, setDocumentError] = useState(null)
 	const [dragActive, setDragActive] = useState(false)
 	const [currentFileName, setCurrentFileName] = useState("")
 	const [selectedDocumentType, setSelectedDocumentType] = useState("")
@@ -173,11 +169,10 @@ export function DocumentUpload({ onUploadComplete }) {
 
 		const validationError = validateFile(files[0])
 		if (validationError) {
-			setError(validationError)
+			toast.error(validationError)
 			return
 		}
 
-		setError("")
 		// hold the file for explicit submit by user
 		setPendingFile(files[0])
 		setCurrentFileName(files[0].name)
@@ -220,9 +215,9 @@ export function DocumentUpload({ onUploadComplete }) {
 			setUploadProgress(100)
 
 			if (result.success) {
-				setDocumentSuccess(result.message || "Document update successful")
+				toast.success(result.message || "Document update successful")
 			} else {
-				setDocumentError(result.error || "Document update failed")
+				toast.error(result.error || "Document update failed")
 			}
 
 			setTimeout(() => {
@@ -239,7 +234,7 @@ export function DocumentUpload({ onUploadComplete }) {
 				onUploadComplete?.()
 			}, 500)
 		} catch (err) {
-			setError(err.message || "Upload failed. Please try again.")
+			toast.error(err.message || "Upload failed. Please try again.")
 			setUploading(false)
 			setUploadProgress(0)
 			setCurrentFileName("")
@@ -343,11 +338,11 @@ export function DocumentUpload({ onUploadComplete }) {
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					{error && (
+					{/* {error && (
 						<Alert variant="destructive" className="mb-4">
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
-					)}
+					)} */}
 
 					<div className="mb-6">
 						<span className="text-sm font-medium mb-2 block">
@@ -487,21 +482,21 @@ export function DocumentUpload({ onUploadComplete }) {
 							</div>
 						)}
 					</div>
-					{documentSuccess && (
+					{/* documentSuccess && (
 						<Alert className="mt-5 text-green-700">
 							<CircleCheck />
 							<AlertDescription className="text-green-700">
 								{documentSuccess}
 							</AlertDescription>
 						</Alert>
-					)}
+					) */}
 
-					{documentError && (
+					{/* documentError && (
 						<Alert variant="destructive" className="mt-5">
 							<CircleAlert />
 							<AlertDescription>{documentError}</AlertDescription>
 						</Alert>
-					)}
+					) */}
 				</CardContent>
 			</Card>
 

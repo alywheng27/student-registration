@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { RegisterForm } from "@/components/auth/register-form";
-import { Button } from "@/components/ui/button";
+import Link from "next/link"
+import { RegisterForm } from "@/components/auth/register-form"
+import { Button } from "@/components/ui/button"
 
 export default function RegisterPage() {
 	return (
@@ -22,5 +22,5 @@ export default function RegisterPage() {
 				<RegisterForm />
 			</div>
 		</div>
-	);
+	)
 }

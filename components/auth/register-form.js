@@ -1,16 +1,9 @@
 "use client"
 
-import {
-	CircleAlert,
-	CircleCheck,
-	Eye,
-	EyeOff,
-	Upload,
-	User,
-} from "lucide-react"
+import { Eye, EyeOff, Upload, User } from "lucide-react"
 import Image from "next/image"
 import { useId, useState } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
 	Card,
@@ -76,15 +69,13 @@ export function RegisterForm() {
 		good_moral: null,
 		grade_card: null,
 	})
-	const [error, setError] = useState("")
-	const [profilePhotoError, setProfilePhotoError] = useState("")
-	const [success, setSuccess] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 	const [profilePhotoFile, setProfilePhotoFile] = useState(null)
 	const [profilePhotoPreview, setProfilePhotoPreview] = useState("")
 
+	const profilePhotoId = useId()
 	const firstNameId = useId()
 	const middleNameId = useId()
 	const surnameId = useId()
@@ -144,13 +135,13 @@ export function RegisterForm() {
 		if (file) {
 			// Validate file type
 			if (!file.type.startsWith("image/")) {
-				setError("Please select a valid image file")
+				toast.error("Please select a valid image file")
 				return
 			}
 
 			// Validate file size (max 5MB)
 			if (file.size > 5 * 1024 * 1024) {
-				setError("Profile photo must be less than 5MB")
+				toast.error("Profile photo must be less than 5MB")
 				return
 			}
 
@@ -164,7 +155,6 @@ export function RegisterForm() {
 				setFormData((prev) => ({ ...prev, profilePhoto: file }))
 			}
 			reader.readAsDataURL(file)
-			setError("")
 		}
 	}
 
@@ -218,18 +208,17 @@ export function RegisterForm() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault()
-		setError("")
-		setProfilePhotoError("")
+		// setError("")
 		setLoading(true)
-
+		console.log(profilePhotoFile)
 		if (profilePhotoFile === null) {
-			setProfilePhotoError("Profile photo is required")
+			toast.error("Profile photo is required")
 			setLoading(false)
 			return
 		}
 
 		if (formData.password !== formData.confirmPassword) {
-			setError("Passwords do not match")
+			toast.error("Passwords do not match")
 			setLoading(false)
 			return
 		}
@@ -237,7 +226,7 @@ export function RegisterForm() {
 		// Require: min 8 chars, at least 1 lowercase, 1 uppercase, 1 number, and 1 special char
 		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/
 		if (!passwordRegex.test(formData.password)) {
-			setError(
+			toast.error(
 				"Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
 			)
 			setLoading(false)
@@ -252,7 +241,7 @@ export function RegisterForm() {
 
 		if (result.success) {
 			// router.push("/");
-			setSuccess(result.message || "Registration successful")
+			toast.success(result.message || "Registration successful")
 			setFormData({
 				first_name: "",
 				middle_name: "",
@@ -300,10 +289,9 @@ export function RegisterForm() {
 			})
 			setProfilePhotoFile(null)
 			setProfilePhotoPreview("")
-			setProfilePhotoError("")
-			setError("")
+			// setError("")
 		} else {
-			setError(result.error || "Registration failed")
+			toast.error(result.error || "Registration failed")
 		}
 
 		setLoading(false)
@@ -359,9 +347,9 @@ export function RegisterForm() {
 										accept="image/*"
 										onChange={handleProfilePhotoChange}
 										className="hidden"
-										id={useId}
+										id={profilePhotoId}
 									/>
-									<Label htmlFor="profilePhoto" className="cursor-pointer">
+									<Label htmlFor={profilePhotoId} className="cursor-pointer">
 										<Button type="button" variant="outline" size="sm" asChild>
 											<span>
 												<Upload className="w-4 h-4 mr-2" />
@@ -373,11 +361,6 @@ export function RegisterForm() {
 										Accepted: JPG, PNG, GIF. Max size: 5MB
 									</span>
 								</div>
-								{profilePhotoError && (
-									<span className="text-xs text-red-500 ml-1">
-										{profilePhotoError}
-									</span>
-								)}
 								<div className="mt-2 text-xs text-muted-foreground">
 									{profilePhotoFile && (
 										<span>Selected: {profilePhotoFile.name}</span>
@@ -1107,20 +1090,6 @@ export function RegisterForm() {
 							</div>
 						</div>
 					</div>
-
-					{error && (
-						<Alert variant="destructive">
-							<CircleAlert />
-							<AlertDescription>{error}</AlertDescription>
-						</Alert>
-					)}
-
-					{success && (
-						<Alert className="text-green-500">
-							<CircleCheck />
-							<AlertDescription>{success}</AlertDescription>
-						</Alert>
-					)}
 
 					<Button
 						type="submit"
