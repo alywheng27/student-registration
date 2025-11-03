@@ -17,8 +17,9 @@ import {
 	User,
 	XCircle,
 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -53,7 +54,7 @@ import {
 	updateWorkflowStep,
 } from "@/lib/workflow"
 
-export function WorkflowManager({ applicationId, studentName }) {
+export function WorkflowManager({ applicationId }) {
 	const { user, updateApplication } = useAuth()
 	const [workflow, setWorkflow] = useState({})
 	const [selectedStep, setSelectedStep] = useState(null)
@@ -231,34 +232,34 @@ export function WorkflowManager({ applicationId, studentName }) {
 		}
 	}
 
-	const getDocumentStatusBadge = (status) => {
-		switch (status) {
-			case "approved":
-				return (
-					<Badge variant="outline" className="text-green-600 border-green-600">
-						<CheckCircle className="h-3 w-3 mr-1" />
-						Approved
-					</Badge>
-				)
-			case "rejected":
-				return (
-					<Badge variant="outline" className="text-red-600 border-red-600">
-						<XCircle className="h-3 w-3 mr-1" />
-						Rejected
-					</Badge>
-				)
-			default:
-				return (
-					<Badge
-						variant="outline"
-						className="text-yellow-600 border-yellow-600"
-					>
-						<Clock className="h-3 w-3 mr-1" />
-						Pending Review
-					</Badge>
-				)
-		}
-	}
+	// const getDocumentStatusBadge = (status) => {
+	// 	switch (status) {
+	// 		case "approved":
+	// 			return (
+	// 				<Badge variant="outline" className="text-green-600 border-green-600">
+	// 					<CheckCircle className="h-3 w-3 mr-1" />
+	// 					Approved
+	// 				</Badge>
+	// 			)
+	// 		case "rejected":
+	// 			return (
+	// 				<Badge variant="outline" className="text-red-600 border-red-600">
+	// 					<XCircle className="h-3 w-3 mr-1" />
+	// 					Rejected
+	// 				</Badge>
+	// 			)
+	// 		default:
+	// 			return (
+	// 				<Badge
+	// 					variant="outline"
+	// 					className="text-yellow-600 border-yellow-600"
+	// 				>
+	// 					<Clock className="h-3 w-3 mr-1" />
+	// 					Pending Review
+	// 				</Badge>
+	// 			)
+	// 	}
+	// }
 
 	return (
 		<div className="space-y-6">
@@ -268,10 +269,12 @@ export function WorkflowManager({ applicationId, studentName }) {
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
 							<div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-								<img
+								<Image
 									src={profile?.photo_url} // Replace with actual profile image URL
 									alt="Profile Avatar"
 									className="h-full w-full object-cover"
+									width={200}
+									height={200}
 								/>
 							</div>
 							<div>

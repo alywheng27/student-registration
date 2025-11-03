@@ -23,6 +23,7 @@ import {
 	Users,
 	XCircle,
 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useId, useState } from "react"
 import { toast } from "sonner"
@@ -36,7 +37,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
 	Dialog,
 	DialogContent,
@@ -54,7 +54,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth"
 import {
 	getAddressWithoutId,
@@ -69,13 +68,12 @@ import {
 } from "@/lib/student_info"
 
 export function AdminDashboard() {
-	const { user, userRole, addAdmin, updateAdmin, deleteAdmin } = useAuth()
+	const { user, addAdmin, updateAdmin, deleteAdmin } = useAuth()
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState("all")
 
 	const [selectedApplication, setSelectedApplication] = useState(null)
 	const [modalType, setModalType] = useState(null)
-	const [reviewNotes, setReviewNotes] = useState("")
 	const [isLoading, setIsLoading] = useState(false)
 
 	const [adminModalType, setAdminModalType] = useState(null)
@@ -265,7 +263,16 @@ export function AdminDashboard() {
 			})
 			setProfileApplication(combinedData)
 		}
-	}, [profiles, applications, documents, users, addresses])
+	}, [
+		profiles,
+		applications,
+		documents,
+		users,
+		addresses,
+		emergencyContacts,
+		parents,
+		schoolAttended,
+	])
 
 	const adminApplicationData = useCallback(() => {
 		if (admins.length > 0) {
@@ -461,36 +468,12 @@ export function AdminDashboard() {
 	const openModal = (application, type) => {
 		setSelectedApplication(application)
 		setModalType(type)
-		setReviewNotes("")
 	}
 
 	const closeModal = () => {
 		setSelectedApplication(null)
 		setModalType(null)
-		setReviewNotes("")
 		setIsLoading(false)
-	}
-
-	const handleAction = async () => {
-		if (!selectedApplication || !modalType) return
-
-		setIsLoading(true)
-
-		// Mock API call - simulate processing time
-		await new Promise((resolve) => setTimeout(resolve, 1500))
-
-		console.log("[v0] Processing action:", {
-			applicationId: selectedApplication.id,
-			action: modalType,
-			notes: reviewNotes,
-		})
-
-		// Mock success feedback
-		alert(
-			`Application ${modalType === "approve" ? "approved" : modalType === "reject" ? "rejected" : modalType === "incomplete" ? "marked as incomplete" : "processed"} successfully!`,
-		)
-
-		closeModal()
 	}
 
 	const getStatusIcon = (status) => {
@@ -508,20 +491,20 @@ export function AdminDashboard() {
 		}
 	}
 
-	const getDocumentStatusBadge = (status) => {
-		switch (status) {
-			case 3:
-				return <Badge className="bg-green-500">Approved</Badge>
-			case 4:
-				return <Badge variant="destructive">Rejected</Badge>
-			case 1:
-				return <Badge variant="secondary">Pending</Badge>
-			case 2:
-				return <Badge className="bg-blue-500">In Progress</Badge>
-			default:
-				return <Badge className="bg-yellow-500">Incomplete</Badge>
-		}
-	}
+	// const getDocumentStatusBadge = (status) => {
+	// 	switch (status) {
+	// 		case 3:
+	// 			return <Badge className="bg-green-500">Approved</Badge>
+	// 		case 4:
+	// 			return <Badge variant="destructive">Rejected</Badge>
+	// 		case 1:
+	// 			return <Badge variant="secondary">Pending</Badge>
+	// 		case 2:
+	// 			return <Badge className="bg-blue-500">In Progress</Badge>
+	// 		default:
+	// 			return <Badge className="bg-yellow-500">Incomplete</Badge>
+	// 	}
+	// }
 
 	const openAdminModal = (type, adminUser) => {
 		setAdminModalType(type)
@@ -661,22 +644,6 @@ export function AdminDashboard() {
 		}
 
 		closeAdminModal()
-	}
-
-	const handlePermissionChange = (permissionId, checked) => {
-		setAdminFormData((prev) => ({
-			...prev,
-			permissions: checked
-				? [...prev.permissions, permissionId]
-				: prev.permissions.filter((p) => p !== permissionId),
-		}))
-	}
-
-	const getPermissionBadge = (permission) => {
-		const permissionConfig = availablePermissions.find(
-			(p) => p.id === permission,
-		)
-		return permissionConfig ? permissionConfig.label : permission
 	}
 
 	return (
@@ -832,10 +799,12 @@ export function AdminDashboard() {
 												</div>
 												{/* Profile Image */}
 												<div className=" h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-													<img
+													<Image
 														src={application.photo_url} // Replace with actual profile image URL
 														alt="Profile Avatar"
 														className="h-full w-full object-cover"
+														width={200}
+														height={200}
 													/>
 												</div>
 												<div>
@@ -1012,48 +981,6 @@ export function AdminDashboard() {
 						</CardContent>
 					</Card>
 				</TabsContent>
-
-				{/* <TabsContent value="reports" className="space-y-4">
-					<Card>
-						<CardHeader>
-							<CardTitle>Reports & Analytics</CardTitle>
-							<CardDescription>
-								Generate and export application reports
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<Card>
-									<CardContent className="p-4">
-										<h4 className="font-semibold mb-2">
-											Application Status Report
-										</h4>
-										<p className="text-sm text-muted-foreground mb-4">
-											Export detailed report of all applications by status
-										</p>
-										<Button onClick={exportData} className="w-full">
-											<Download className="h-4 w-4 mr-2" />
-											Export CSV
-										</Button>
-									</CardContent>
-								</Card>
-
-								<Card>
-									<CardContent className="p-4">
-										<h4 className="font-semibold mb-2">Monthly Summary</h4>
-										<p className="text-sm text-muted-foreground mb-4">
-											Generate monthly application statistics and trends
-										</p>
-										<Button className="w-full bg-transparent" variant="outline">
-											<Download className="h-4 w-4 mr-2" />
-											Generate Report
-										</Button>
-									</CardContent>
-								</Card>
-							</div>
-						</CardContent>
-					</Card>
-				</TabsContent> */}
 			</Tabs>
 
 			{/* Added modal dialogs for different actions */}
@@ -1127,10 +1054,12 @@ export function AdminDashboard() {
 										</CardHeader>
 										<CardContent className="space-y-3">
 											<div className="w-[60%] mx-auto rounded-full bg-muted flex items-center justify-center overflow-hidden">
-												<img
+												<Image
 													src={selectedApplication.photo_url} // Replace with actual profile image URL
 													alt="Profile Avatar"
 													className="h-full w-full object-cover"
+													width={200}
+													height={200}
 												/>
 											</div>
 										</CardContent>

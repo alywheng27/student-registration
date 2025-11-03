@@ -38,10 +38,7 @@ export default function WorkflowPage() {
 			</header>
 
 			<main className="container mx-auto sm:px-4 lg:px-[10%] py-8">
-				<WorkflowManager
-					applicationId={applicationId}
-					studentName="John Doe" // In real app, this would be fetched based on applicationId
-				/>
+				<WorkflowManager applicationId={applicationId} />
 			</main>
 		</div>
 	)

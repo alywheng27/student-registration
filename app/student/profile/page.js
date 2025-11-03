@@ -1287,10 +1287,12 @@ export default function ProfilePage() {
 									<div className="flex items-center gap-3">
 										<div className="w-12 h-12 rounded-full overflow-hidden bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
 											{profilePhoto ? (
-												<img
+												<Image
 													src={profilePhoto || "/placeholder.svg"}
 													alt={profile?.surname}
 													className="w-full h-full object-cover"
+													width={200}
+													height={200}
 												/>
 											) : (
 												<User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
