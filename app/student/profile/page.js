@@ -1384,6 +1384,13 @@ export default function ProfilePage() {
 					</div>
 				</div>
 			</main>
+
+			<footer className="border-t bg-card mt-8">
+				<div className="container mx-auto px-4 py-4 text-center text-muted-foreground">
+					© {new Date().getFullYear()} Student Registration System. All rights
+					reserved.
+				</div>
+			</footer>
 		</div>
 	)
 }

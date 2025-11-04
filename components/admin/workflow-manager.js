@@ -270,7 +270,7 @@ export function WorkflowManager({ applicationId }) {
 						<div className="flex items-center gap-3">
 							<div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
 								<Image
-									src={profile?.photo_url} // Replace with actual profile image URL
+									src={profile?.photo_url || "/placeholder.svg"} // Replace with actual profile image URL
 									alt="Profile Avatar"
 									className="h-full w-full object-cover"
 									width={200}

@@ -40,6 +40,13 @@ export default function WorkflowPage() {
 			<main className="container mx-auto sm:px-4 lg:px-[10%] py-8">
 				<WorkflowManager applicationId={applicationId} />
 			</main>
+
+			<footer className="border-t bg-card mt-8">
+				<div className="container mx-auto px-4 py-4 text-center text-muted-foreground">
+					© {new Date().getFullYear()} Student Registration System. All rights
+					reserved.
+				</div>
+			</footer>
 		</div>
 	)
 }
