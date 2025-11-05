@@ -643,6 +643,7 @@ export function AdminDashboard() {
 			}
 		}
 
+		adminData()
 		closeAdminModal()
 	}
 
