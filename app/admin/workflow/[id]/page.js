@@ -20,7 +20,7 @@ export default function WorkflowPage() {
 						<Link href="/dashboard">
 							<Button variant="ghost" size="sm">
 								<ArrowLeft className="h-4 w-4 mr-2" />
-								Back to Dashboard
+								{/* Back to Dashboard */}
 							</Button>
 						</Link>
 						<h1 className="text-xl font-bold">Review Workflow</h1>
