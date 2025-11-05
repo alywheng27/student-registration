@@ -26,7 +26,7 @@ export default function WorkflowPage() {
 						<h1 className="text-xl font-bold">Review Workflow</h1>
 					</div>
 					<div className="flex items-center space-x-4">
-						<span className="text-sm text-muted-foreground">
+						<span className="text-sm text-muted-foreground hidden md:block">
 							{user?.email} ({userRole})
 						</span>
 						<Button variant="outline" size="sm" onClick={logout}>

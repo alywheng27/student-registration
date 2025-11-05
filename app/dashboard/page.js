@@ -34,7 +34,7 @@ export default function DashboardPage() {
 				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
 					<h1 className="text-xl font-bold">Student Registration System</h1>
 					<div className="flex items-center space-x-4">
-						<span className="text-sm text-muted-foreground">
+						<span className="text-sm text-muted-foreground hidden md:block">
 							{user?.email} ({userRole})
 						</span>
 						<Dialog>

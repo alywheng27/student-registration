@@ -42,7 +42,7 @@ export default function DocumentsPage() {
 						<h1 className="text-xl font-bold">Document Upload</h1>
 					</div>
 					<div className="flex items-center space-x-4">
-						<span className="text-sm text-muted-foreground">
+						<span className="text-sm text-muted-foreground hidden md:block">
 							{user?.email} ({userRole})
 						</span>
 						<Dialog>

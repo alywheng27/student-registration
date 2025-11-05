@@ -108,7 +108,7 @@ export function StudentDashboard() {
 	return (
 		<div className="space-y-6">
 			{/* Welcome Section */}
-			<div className="flex items-center justify-between">
+			<div className="flex items-center justify-between px-4 py-4">
 				<div>
 					<h1 className="text-3xl font-bold text-foreground">
 						Welcome, {profile?.first_name} {profile?.surname}
