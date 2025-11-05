@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function NotFoundPage() {
 	return (
 		<div
@@ -33,7 +35,7 @@ export default function NotFoundPage() {
 			<p style={{ fontSize: 18, marginBottom: 24 }}>
 				Sorry, the page you are looking for does not exist.
 			</p>
-			<a
+			<Link
 				href="/"
 				style={{
 					padding: "10px 24px",
@@ -47,7 +49,7 @@ export default function NotFoundPage() {
 				}}
 			>
 				Go Home
-			</a>
+			</Link>
 		</div>
-	);
+	)
 }
