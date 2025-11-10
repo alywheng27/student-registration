@@ -5,6 +5,16 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import { WorkflowManager } from "@/components/admin/workflow-manager"
 import { Button } from "@/components/ui/button"
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog"
 import { useAuth } from "@/lib/auth"
 
 export default function WorkflowPage() {
@@ -29,10 +39,31 @@ export default function WorkflowPage() {
 						<span className="text-sm text-muted-foreground hidden md:block">
 							{user?.email} ({userRole})
 						</span>
-						<Button variant="outline" size="sm" onClick={logout}>
-							<LogOut className="h-4 w-4 mr-2" />
-							Logout
-						</Button>
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button variant="outline" size="sm">
+									<LogOut className="h-4 w-4 mr-2" />
+									Logout
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Confirm Logout</DialogTitle>
+									<DialogDescription>
+										Are you sure you want to log out? You will need to sign in
+										again to access your account.
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<DialogClose asChild>
+										<Button variant="outline">Cancel</Button>
+									</DialogClose>
+									<DialogClose asChild>
+										<Button onClick={logout}>Logout</Button>
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
 					</div>
 				</div>
 			</header>

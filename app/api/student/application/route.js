@@ -24,14 +24,7 @@ export async function PUT(request) {
 
 		// Basic validation
 		console.log("[APPLICATION] 🔍 Validating required fields...")
-		if (
-			!id ||
-			!status_id ||
-			!step_id ||
-			!last_updated ||
-			!reviewed_by ||
-			!note
-		) {
+		if (!id || !status_id || !step_id || !last_updated || !reviewed_by) {
 			console.error(
 				"[APPLICATION] ❌ Validation failed - missing required fields:",
 				{
@@ -40,7 +33,6 @@ export async function PUT(request) {
 					step_id: !!step_id,
 					last_updated: !!last_updated,
 					reviewed_by: !!reviewed_by,
-					note: !!note,
 				},
 			)
 			return NextResponse.json(
